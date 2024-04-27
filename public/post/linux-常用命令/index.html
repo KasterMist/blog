@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Kaster Mist Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="http://localhost:1313//img/home-bg-jeep.jpg">
+    <meta property="twitter:image" content="http://localhost:1313//img/home-bg-jeep.jpg" />
+    
+
+    
+    <meta name="title" content="Linux 常用命令" />
+    <meta property="og:title" content="Linux 常用命令" />
+    <meta property="twitter:title" content="Linux 常用命令" />
+    
+
+    
+    <meta name="description" content="">
+    <meta property="og:description" content="" />
+    <meta property="twitter:description" content="" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>Linux 常用命令 | 喀斯特雾霭的博客 | Kaster Mist Blog</title>
+
+    <link rel="canonical" href="/post/linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+
+    
+    <link rel="stylesheet" href="/css/font-awesome.all.min.css">
+
+    
+    
+
+    
+    <script src="/js/jquery.min.js"></script>
+
+    
+    <script src="/js/bootstrap.min.js"></script>
+
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    <script src="/js/lazysizes.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Kaster Mist Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">All Posts</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/cuda/">cuda</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/unix/">unix</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/archive//">ARCHIVE</a></li>
+                    
+                        <li><a href="/notes//">NOTES</a></li>
+                    
+                        <li><a href="/about//">ABOUT</a></li>
+                    
+		            <li>
+                        <a href="/search"><i class="fa fa-search"></i></a>
+		           </li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/home-bg-jeep.jpg')
+    }
+</style>
+
+<header class="intro-header" >
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>Linux 常用命令</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        
+                            Posted by 
+                            
+                                    Kaster Mist Blog
+                             
+                            on 
+                            Thursday, April 4, 2024
+                            
+                            
+                            
+                            
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <h2 id="基础命令">基础命令</h2>
+<h4 id="查询文件和子目录-ls">查询文件和子目录 ls</h4>
+<p>查询文件和子目录的最简单的命令是<code>ls</code>。它可以列出当前目录的文件和子目录。常用的指令有:</p>
+<ul>
+<li><code>ls /path/to/directory</code> 列出指定目录中的文件和子目录</li>
+<li><code>ls -a</code>列出隐藏文件和子目录</li>
+<li><code>ls -l</code>以详细格式列出文件和子目录，包含读写权限、创建时间等信息</li>
+</ul>
+<h4 id="查询当前工作目录的绝对路径-pwd">查询当前工作目录的绝对路径 pwd</h4>
+<p>查询当前工作目录的绝对路径是<code>pwd</code></p>
+<h4 id="改变当前工作目录-cd">改变当前工作目录 cd</h4>
+<p>使用<code>cd</code>可更改当前工作目录，可以在当前目录下使用<code>cd subpath</code>进入子目录，也可以使用<code>cd absolutePath</code>进入绝对路径目录下。</p>
+<p>使用<code>cd ..</code>可移动到上一级目录。</p>
+<h4 id="创建目录-mkdir">创建目录 mkdir</h4>
+<p><code>mkdir</code> 命令用于创建一个新的目录。</p>
+<ul>
+<li><code>mkdir directory</code>在当前目录下创建一个directory的子目录</li>
+<li><code>mkdir -p /path/to/new/directory</code>如果要递归创建目录的话，需要加上<code>-p</code>flag</li>
+</ul>
+<h4 id="删除目录-rmdir">删除目录 rmdir</h4>
+<p><code>rmdir</code>只能用于删除空的目录，如果是非空目录，则需要时用<code>rm</code></p>
+<ul>
+<li><code>rmdir -v /path/subpath</code>会删除path里面的subpath子目录，同时显示详细的输出。</li>
+<li><code>rmdir -p /path/subpath</code>会首先删除path里面的subpath子目录，之后会尝试删除path目录。</li>
+</ul>
+<h4 id="创建空文件-touch">创建空文件 touch</h4>
+<ul>
+<li><code>touch filename</code>创建一个名叫filename的空文件。</li>
+<li><code>touch -c filename</code>如果文件已经存在，则不创建该文件。这样可以避免意外覆盖现有文件。</li>
+</ul>
+<h4 id="复制文件和目录-cp">复制文件和目录 cp</h4>
+<p>语法: <code>cp [option] source destination</code></p>
+<ul>
+<li><code>cp old_path/old_file.txt new_path/new_file.txt</code>将old_path的old_file.txt以new_file.txt的名字复制到new_path中。如果不更改名字的话，destination可以只写<code>new_path</code></li>
+<li><code>cp -r old_path/old_sub_path new_path/new_subpath</code>递归复制整个目录</li>
+</ul>
+<h4 id="移动或者重命名文件和目录-mv">移动或者重命名文件和目录 mv</h4>
+<p>语法: <code>mv [options] source destination</code></p>
+<ul>
+<li><code>mv old_path/old_file.txt new_path/new_file.txt</code>将old_path的old_file.txt以new_file.txt的名字移动到new_path中。</li>
+<li><code>mv -i old_path/old_file.txt new_path/new_file.txt</code>在覆盖目标位置的任何现有文件前提示。这样可以防止意外覆盖数据。</li>
+<li><code>mv old_file.txt new_file.txt</code>可以通过mv在同一路径下重命名old_file.txt为new_file.txt。</li>
+</ul>
+<h4 id="移除文件和目录-rm">移除文件和目录 rm</h4>
+<p>rm在使用时需要格外小心，因为恢复使用rm删除的文件和目录会非常困难。</p>
+<p><code>rm -r name</code>递归删除目录，包括目录里面的所有内容。</p>
+<p><code>rm -f name</code>强制删除并抑制所有提示。</p>
+<p><code>rm -i name</code>在删除每个文件或目录前提示确认，以防意外删除。</p>
+<p>比如使用<code>rm -rf path</code>可以强制删除path路径和path里面的所有内容。</p>
+<h4 id="在目录层次结构中搜索文件-find">在目录层次结构中搜索文件 find</h4>
+<p>语法: <code>find [path] [critical]</code></p>
+<p>示例</p>
+<ul>
+<li><code>find . -name example.txt</code>: 查找当前目录及其子目录中所有名为 <code>example.txt</code> 的文件</li>
+<li><code>find /home -type f</code>: 查找 <code>/home</code> 目录中所有的普通文件</li>
+<li><code>find / -type f -size +1M</code>: 查找文件大小大于 1MB 的文件</li>
+<li><code>find / -name name</code>: 在<code>/</code>路径下查找名字为<code>name</code>的文件</li>
+</ul>
+<h4 id="使用条件匹配搜索文本-grep">使用条件匹配搜索文本 grep</h4>
+<p>语法: <code>grep [options] pattern [files]</code></p>
+<p>示例</p>
+<ul>
+<li><code>grep &quot;a&quot; example.txt</code>搜索<code>example.txt</code>中&quot;a&quot;这个单词。</li>
+<li><code>grep -c &quot;a&quot; example.txt</code>搜索<code>example.txt</code>中&quot;a&quot;这个单词出现的次数。</li>
+</ul>
+<h4 id="比较文件-diff">比较文件 diff</h4>
+<p>语法: <code>diff [options] file1 file2</code></p>
+<p>用于比较两个文件的差异</p>
+<p><code>diff original.txt updated.txt</code>比较 original.txt和updated.txt两个文件的差异，会输出产生差异的不同行。</p>
+<h4 id="字数统计-wc">字数统计 wc</h4>
+<p><code>wc -l example.txt</code>: 只打印行计数</p>
+<p><code>wc -w example.txt</code>: 只打印字数</p>
+<p><code>wc -c example.txt</code>: 只打印字节数</p>
+<h4 id="历史命令-history">历史命令 history</h4>
+<p>使用<code>history</code>可以查看之前输入过的命令语句。每个命令前面都有一个编号。你可以使用 <code>!</code> 加上命令编号来执行历史记录中的命令，比如<code>!123</code>来执行第123号的命令。还可以使用 <code>!!</code> 来执行最后一个命令，或者使用 <code>!string</code> 来执行最近包含字符串 <code>string</code> 的命令。</p>
+<p>使用 <code>history -c</code> 命令来清除命令历史记录。</p>
+<h2 id="文件权限命令">文件权限命令</h2>
+<h4 id="更改文件模式或访问权限-chmod">更改文件模式或访问权限 chmod</h4>
+<p>文件的权限包括：只读(r)，写入(w)，执行(x)。</p>
+<p>模式：指定要修改的权限模式。权限模式可以使用数字表示，也可以使用符号表示。</p>
+<ul>
+<li>数字表示：使用三位数字（0-7）表示权限。每一位数字代表一个权限位，分别对应于读（4）、写（2）和执行（1）权限。例如，755 表示所有者具有读、写和执行权限，组和其他用户具有读和执行权限。</li>
+<li>符号表示：使用符号来表示权限。符号表示包括以下几个部分：
+<ul>
+<li>操作符：可以是 <code>+</code>（添加权限）、<code>-</code>（删除权限）或 <code>=</code>（设置权限）。</li>
+<li>权限范围：可以是 <code>u</code>（所有者）、<code>g</code>（组）、<code>o</code>（其他用户）或 <code>a</code>（所有用户）。</li>
+<li>权限类型：可以是 <code>r</code>（读取权限）、<code>w</code>（写入权限）或 <code>x</code>（执行权限）。</li>
+</ul>
+</li>
+</ul>
+<p>例如，<code>u+x</code> 表示为所有者添加执行权限，<code>go-w</code> 表示删除组和其他用户的写入权限。</p>
+<p>示例:</p>
+<ul>
+<li><code>chmod 644 example.txt</code>: 将文件 <code>example.txt</code> 的权限设置为所有者可读写、组和其他用户只读。</li>
+<li><code>chmod -R 777 documents</code>: 将目录 <code>documents</code> 及其子目录中所有文件的权限设置为所有者可读写执行，组和其他用户可读写执行 (-R用于递归地修改目录及其子目录中的文件权限)。</li>
+<li><code>chmod +x script.sh</code>: 为 <code>script.sh</code> 添加执行权限。</li>
+</ul>
+<h2 id="管理命令">管理命令</h2>
+<h4 id="查看当前进程信息-ps">查看当前进程信息 ps</h4>
+<p>用于显示当前正在运行的进程信息。它可以显示当前用户的进程、所有用户的进程或者系统的所有进程。</p>
+<h4 id="显示linux进程-top">显示linux进程 top</h4>
+<p>动态显示系统的进程信息和资源使用情况。它会实时更新显示当前正在运行的进程列表，并且会以交互式的方式展示系统的 CPU 使用情况、内存使用情况等</p>
+<h4 id="交互式进程浏览-htop">交互式进程浏览 htop</h4>
+<p><code>htop</code> 命令是 <code>top</code> 命令的改进版本，提供了更加友好和直观的界面，并且支持更多的交互操作。它可以显示更多的进程信息，并且可以通过键盘快捷键进行排序、过滤、查找等操作。</p>
+<h4 id="向进程发送终结信号-kill">向进程发送终结信号 kill</h4>
+<p><code>kill PID</code>: 通过输入PID(进程ID)或程序的二进制名称来终结进程。</p>
+<p><code>kill -9 name</code>: 通过输入进程名称来终结进程，需要添加<code>-9</code>选项。</p>
+<p>示例: 查找一个进程并终结</p>
+<ol>
+<li><code>ps aux | grep example_process</code>: 使用 <code>ps</code> 命令查找名为 <code>example_process</code> 的进程，述命令会显示包含 <code>example_process</code> 关键词的进程信息，并输出其 PID。</li>
+<li><code>kill PID</code>: 在获取到PID后，即可通过<code>kill PID</code>的方式来终结进程。</li>
+</ol>
+<h4 id="报告虚拟内存统计数据-vmstat">报告虚拟内存统计数据 vmstat</h4>
+<p>打印有关内存、交换、I/O 和 CPU 活动的详细报告。其中包括已用/可用内存、交换入/出、磁盘块读/写和 CPU 进程/闲置时间等指标。</p>
+<ul>
+<li><code>vmstat -n 5</code>: 每隔5秒更新一次信息。</li>
+<li><code>vmstat -a</code>: 显示活动和非活动内存。</li>
+<li><code>vmstat -s</code>: 显示事件计数器和内存统计信息。</li>
+<li><code>vmstat -S</code>: 以 KB 而不是块为单位输出。</li>
+</ul>
+<h4 id="报告cpu和io统计数据-iostat">报告CPU和I/O统计数据 iostat</h4>
+<p>监控并显示 CPU 利用率和磁盘 I/O 指标。其中包括 CPU 负载、IOPS、读/写吞吐量等。</p>
+<ul>
+<li><code>iostat -c</code>: 显示CPU使用率信息。</li>
+<li><code>iostat -t</code>: 为每份报告打印时间戳。</li>
+<li><code>iostat -x</code>: 显示服务时间和等待计数等扩展统计信息。</li>
+<li><code>iostat -d</code>: 显示每个磁盘/分区的详细统计信息，而不是合计总数。</li>
+<li><code>iostat -p</code>: 显示特定磁盘设备的统计信息。</li>
+</ul>
+<h4 id="显示可用和已用内存量-free">显示可用和已用内存量 free</h4>
+<ul>
+<li><code>free -b</code>: 以字节为单位显示输出。</li>
+<li><code>free -k</code>: 以KB为单位显示输出结果。</li>
+<li><code>free -m</code>: 以MB为单位显示输出，而不是以字节为单位。</li>
+<li><code>free -h</code>: 以GB、MB等人类可读格式打印统计数据，而不是字节。</li>
+</ul>
+<h2 id="有用的unix插件">有用的Unix插件</h2>
+<h4 id="fzf">fzf</h4>
+<p>参考资料:https://zhuanlan.zhihu.com/p/41859976</p>
+<p>github源码: <a href="https://github.com/junegunn/fzf">https://github.com/junegunn/fzf</a></p>
+<p>fzf是一种非常好用的下拉查找工具，通常需要与其他的命令组合。下面是一些常用的功能:</p>
+<ul>
+<li>单独使用<code>fzf</code>命令会展示当前目录下所有文件列表，可以用键盘上下键或者鼠标点出来选择。</li>
+<li>使用vim组合fzf来查找并打开当前目录下的文件: <code>vim $(fzf)</code></li>
+<li>切换当前工作目录: <code>cd $(find * -type d | fzf)</code>，其实现逻辑如下:
+<ol>
+<li>使用find命令找出所有的子目录</li>
+<li>把子目录列表pipe到fzf上进行选择</li>
+<li>再把结果以子命令的形式传给cd</li>
+</ol>
+</li>
+<li>可以将<code>cmd | fzf</code>理解为将列出的结果以fzf下拉查找工具的方式来实现，比如<code>ls | fzf</code>就是会通过下拉查找的方式查看当前路径下(不包括子路径)的文件和文件夹。<code>$(fzf)</code>意味着通过fzf选取的信息将输入到变量当中，比如<code>vim $(fzf)</code>就是通过fzf选取文件后再用vim打开。</li>
+<li>切换git分支: <code>git checkout $(git branch -r | fzf)</code></li>
+</ul>
+<h5 id="使用fzf插件补全shell命令">使用fzf插件补全shell命令</h5>
+<p>fzf自带一种插件可以通过输入**来自动生成下拉框窗口来补全信息。比如使用<code>cd **</code>然后<code>tab</code>可以使用下拉菜单选择路径。可以在https://github.com/junegunn/fzf搜索“Fuzzy completion for bash and zsh”找到有关的信息。</p>
+<p>如果用的是homebrew，则先通过<code>brew install fzf</code>，然后执行<code>$(brew --prefix)/opt/fzf/install</code>。之后在<code>~/.zshrc</code>的<code>plugins=(...)</code>中添加<code>fzf</code>。之后执行<code>source ~/.zshrc</code>，即可使用。</p>
+<p>我们也可以对FZF_DEFAULT_OPTS进行设置，来自定义fzf的界面，比如<code>FZF_DEFAULT_OPTS=&quot;--height 40% --layout=reverse --preview '(highlight -O ansi {} || cat {}) 2&gt; /dev/null | head -500'&quot;</code></p>
+<h4 id="ag">ag</h4>
+<p>一个类似于 <code>grep</code> 的代码搜索工具，比<code>grep</code>有更高的性能。<code>ag</code> 在搜索时会自动忽略 <code>.gitignore</code> 中的文件和目录，从而提高搜索效率。它支持正则表达式，高亮显示匹配结果，并且可以直接在你的编辑器中使用。</p>
+<ul>
+<li>在当前目录以及子目录搜索文本: <code>ag &quot;search pattern&quot;</code></li>
+<li>在特定文件类型中搜索: <code>ag &quot;search pattern&quot; --cpp</code>只在HTML文件中搜索</li>
+<li>忽略特定文件或目录: <code>ag &quot;search pattern&quot; --ignore dir/*</code>忽略特定目录下的搜索 <code>ag &quot;search pattern&quot; --ignore *.log</code> 忽略所有.log文件</li>
+<li>搜索特定目录: <code>ag &quot;search pattern&quot; /path/to/directory</code></li>
+<li>仅显示文件名: <code>ag &quot;search pattern&quot; -l</code></li>
+<li>与grep一样，可以配合其他语句执行，比如<code>cat &quot;filename&quot; | ag &quot;search pattern&quot;</code></li>
+<li>引号可加可不加</li>
+</ul>
+
+                
+
+                
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/cuda%E5%AD%A6%E4%B9%A0-%E5%8D%81-%E4%B9%A6%E7%B1%8D%E4%B8%AD%E7%9A%84%E5%87%BD%E6%95%B0%E6%95%B4%E5%90%88/" data-toggle="tooltip" data-placement="top" title="CUDA学习(十)--书籍中的函数整合">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/vim/" data-toggle="tooltip" data-placement="top" title="Vim">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+                
+
+                
+
+
+
+            </div>
+
+            
+            
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+            
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+                <section>
+                    <hr>
+                    <h5>FRIENDS</h5>
+                    <ul class="list-inline">
+                        
+                        <li><a target="_blank" href=""></a></li>
+                        
+                    </ul>
+                </section>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">                  
+                    
+                    <li>
+                        <a href="mailto:KasterMist@gmail.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/KasterMist">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		            
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/letian-xie-8a0886282/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Kaster Mist Blog 2024
+                    
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        
+        
+        
+        
+            _containerSelector = 'div.post-container'
+        
+
+        
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        
+        $(selector).html('')
+
+        
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    
+
+
+    loadAsync("\/js\/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+
+</body>
+</html>

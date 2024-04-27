@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Kaster Mist Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="http://localhost:1313//img/home-bg-jeep.jpg">
+    <meta property="twitter:image" content="http://localhost:1313//img/home-bg-jeep.jpg" />
+    
+
+    
+    <meta name="title" content="CUDA学习(八)" />
+    <meta property="og:title" content="CUDA学习(八)" />
+    <meta property="twitter:title" content="CUDA学习(八)" />
+    
+
+    
+    <meta name="description" content="">
+    <meta property="og:description" content="" />
+    <meta property="twitter:description" content="" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>CUDA学习(八) | 喀斯特雾霭的博客 | Kaster Mist Blog</title>
+
+    <link rel="canonical" href="/post/cuda%E5%AD%A6%E4%B9%A0-%E5%85%AB/">
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+
+    
+    <link rel="stylesheet" href="/css/font-awesome.all.min.css">
+
+    
+    
+
+    
+    <script src="/js/jquery.min.js"></script>
+
+    
+    <script src="/js/bootstrap.min.js"></script>
+
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    <script src="/js/lazysizes.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Kaster Mist Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">All Posts</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/cuda/">cuda</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/unix/">unix</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/archive//">ARCHIVE</a></li>
+                    
+                        <li><a href="/notes//">NOTES</a></li>
+                    
+                        <li><a href="/about//">ABOUT</a></li>
+                    
+		            <li>
+                        <a href="/search"><i class="fa fa-search"></i></a>
+		           </li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/home-bg-jeep.jpg')
+    }
+</style>
+
+<header class="intro-header" >
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>CUDA学习(八)</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        
+                            Posted by 
+                            
+                                    Kaster Mist Blog
+                             
+                            on 
+                            Thursday, February 29, 2024
+                            
+                            
+                            
+                            
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <p>本章将介绍如何分配和使用零拷贝内存(Zero-Copy Memory)，如何在同一个应用程序中使用多个GPU，以及如何分配和使用可移动的固定内存(Portable Pinned Memory)。</p>
+<!-- raw HTML omitted -->
+<h2 id="零拷贝主机内存">零拷贝主机内存</h2>
+<p>上一章介绍了固定内存（页锁定内存），这种新型的主机内存能够确保不会交换出物理内存。我们通过cudaHostAlloc()来分配这种内存，并且传递参数cudaHostAllocDefault来获得默认的固定内存。本章会介绍在分配固定内存时可以使用其他参数值。除了cudaHostAllocDefault外，还可以传递的标志之一是cudaHostAllocMapped。通过cudaHostAllocMapped分配的主机内存也是固定的，它与通过cudaHostAllocDefault分配的固定内存有着相同的属性，特别是当它不能从物理内存中交换出去或者重新定位时。但这种内存除了可以用于主机与GPU之间的内存复制外，还可以打破主机内存规则之一：可以在CUDA C核函数中直接访问这种类型的主机内存。由于这种内存不需要复制到GPU，因此也被称为零拷贝内存。</p>
+<h3 id="通过零拷贝内存实现点积运算">通过零拷贝内存实现点积运算</h3>
+<p>通常，GPU只能访问GPU内存，而CPU也只能访问主机内存。但在某些环境中，打破这种规则或许能带来更好的效果。下面仍然给出一个矢量点积运算来进行介绍。这个版本不将输入矢量显式复制到GPU，而是使用零拷贝内存从GPU中直接访问数据。我们将编写两个函数，其中一个函数是对标准主机内存的测试，另一个函数将在GPU上执行归约运算，并使用零拷贝内存作为输入缓冲区和输出缓冲区。首先是点积运算的主机内存版本:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">float</span> <span style="color:#50fa7b">malloc_test</span>(<span style="color:#8be9fd">int</span> size){
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//首先创建计时事件，然后分配输入缓冲区和输出缓冲区，并用数据填充输入缓冲区。
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">cudaEvent_t</span> start, stop;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a, <span style="color:#ff79c6">*</span>b, c, <span style="color:#ff79c6">*</span>partial_c;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>dev_a, <span style="color:#ff79c6">*</span>dev_b, <span style="color:#ff79c6">*</span>dev_partial_c;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> elapsedTime;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>start));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>stop));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在CPU上分配内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    a <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">float</span><span style="color:#ff79c6">*</span>)<span style="color:#50fa7b">malloc</span>(size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>));
+</span></span><span style="display:flex;"><span>    b <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">float</span><span style="color:#ff79c6">*</span>)<span style="color:#50fa7b">malloc</span>(size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>));
+</span></span><span style="display:flex;"><span>    partial_c <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">float</span><span style="color:#ff79c6">*</span>)<span style="color:#50fa7b">malloc</span>(blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在GPU上分配内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_a, size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>)));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_b, size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>)));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_partial_c, blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>)));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//用数据填充主机内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> size; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        a[i] <span style="color:#ff79c6">=</span> i;
+</span></span><span style="display:flex;"><span>        b[i] <span style="color:#ff79c6">=</span> i <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//启动计时器，将输入数据复制到GPU，执行点积核函数，并将中间计算结果复制回主机。
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventRecord</span>(start, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将数组“a“和”b”复制到GPU
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(dev_a, a, size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaMemcpyHostToDevice));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(dev_b, b, size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaMemcpyHostToDevice));
+</span></span><span style="display:flex;"><span>    dot<span style="color:#ff79c6">&lt;&lt;&lt;</span>blocksPerGrid, threadsPerBlock<span style="color:#ff79c6">&gt;&gt;&gt;</span>(size, dev_a, dev_b, dev_partial_c);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将数组“c”从GPU复制到CPU
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(partial_c, dev_partial_c, blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaMemcpyDeviceToHost));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//停止计时器
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventRecord</span>(stop, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventSynchronize</span>(stop));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventElapsedTime</span>(<span style="color:#ff79c6">&amp;</span>elapsedTime, start, stop));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将中间计算结果相加起来，并释放输入缓冲区和输出缓冲区
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#6272a4">//结束CPU上的计算
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    c <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> blocksPerGrid; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        c <span style="color:#ff79c6">+=</span> partial_c[i];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFree</span>(dev_a));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFree</span>(dev_b));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFree</span>(dev_partial_c));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//释放CPU上的内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">free</span>(a);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">free</span>(b);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">free</span>(partial_c);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//释放事件
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventDestroy</span>(start));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventDestroy</span>(stop));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Value calculated: %f</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, c);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">return</span> elapsedTime;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>使用零拷贝内存的版本是非常类似的多，只是在内存分配上有所不同：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">float</span> <span style="color:#50fa7b">cuda_host_alloc_test</span>(<span style="color:#8be9fd">int</span> size){
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">cudaEvent_t</span> start, stop;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a, <span style="color:#ff79c6">*</span>b, c, <span style="color:#ff79c6">*</span>partial_c;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>dev_a, <span style="color:#ff79c6">*</span>dev_b, <span style="color:#ff79c6">*</span>dev_partial_c;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> elapsedTime;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>start));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>stop));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在CPU上分配内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaHostAlloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>a, size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaHostAllocWriteCombined <span style="color:#ff79c6">|</span> cudaHostAllocMapped));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaHostAlloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>b, size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaHostAllocWriteCombined <span style="color:#ff79c6">|</span> cudaHostAllocMapped));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaHostAlloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>partial_c, blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaHostAllocMapped));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//用数据填充主机内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> size; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        a[i] <span style="color:#ff79c6">=</span> i;
+</span></span><span style="display:flex;"><span>        b[i] <span style="color:#ff79c6">=</span> i <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>使用cudaHostAlloc()时，通过参数flags来指定内存的其他行为。cudaHostAllocMapped这个标志告诉运行时将从GPU中访问这块内存。这个标志意味着分配零拷贝内存。对于这两个输入缓冲区，我们还制定了标志cudaHostAllocWriteCombined。这个标志运行时应该将内存分配为“合并式写入（Write-Combined）”内存。这个标志并不会改变应用程序的功能，但却可以显著地提升GPU读取内存时的性能。然而，当CPU也要读取这块内存时，“合并式写入”会显得低效，因此在决定是否使用这个标志之前，必须首先考虑应用程序的可能访问模式。</p>
+<p>在使用标志cudaHostAllocMapped来分配主机内存后，就可以从GPU中访问这块内存。然而，GPU的虚拟内存空间与CPU是不同的，因此在**GPU上访问它们与在CPU上访问它们有着不同的地址。调用cudaHostAlloc()将返回这块内存在CPU上的指针，因此需要调用cudaHostGetDevicePointer()来获得这块内存在GPU上的有效指针。**这些指针将被传递给核函数，并在随后由GPU对这块内存执行读取和写入等操作。即使dev_a、dev_b和dev_partial_c都位于主机上，但对于核函数来说，它们看起来就像GPU内存一样，这正是由于调用了cudaHostGetDevicePointer()。由于部分计算结果已经位于主机上，<strong>因此就不再需要通过cudaMemcpy()将它们从设备上复制回来。</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaHostGetDevicePointer</span>(<span style="color:#ff79c6">&amp;</span>dev_a, a, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaHostGetDevicePointer</span>(<span style="color:#ff79c6">&amp;</span>dev_b, b, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaHostGetDevicePointer</span>(<span style="color:#ff79c6">&amp;</span>dev_partial_c, partial_c, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//启动计时器以及核函数
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventRecord</span>(start, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    dot<span style="color:#ff79c6">&lt;&lt;&lt;</span>blocksPerGrid, threadsPerBlock<span style="color:#ff79c6">&gt;&gt;&gt;</span>(size, dev_a, dev_b, dev_partial_c);
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//不再需要通过cudaMemcpy()将它们从设备上复制回来
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaThreadSynchronize</span>());
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventRecord</span>(stop, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventSynchronize</span>(stop));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventElapsedTime</span>(<span style="color:#ff79c6">&amp;</span>elapsedTime, start, stop));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//结束GPU上的操作
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    c <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> blocksPerGrid; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        c <span style="color:#ff79c6">+=</span> partial_c[i];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在使用cudaHostAlloc()的点积运算代码中，唯一剩下的事情就是执行释放操作
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFreeHost</span>(a));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFreeHost</span>(b));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFreeHost</span>(partial_c));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//释放事件
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventDestroy</span>(start));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventDestroy</span>(stop));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Value calculated: %f</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, c);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">return</span> elapsedTime;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>无论cudaHostAlloc()中使用什么标志，总是按照相同的方式来释放内存，即只需调用cudaFreeHost()。剩下的工作就是观察main()如何将这些代码片段组合在一起。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#50fa7b">main</span>(){
+</span></span><span style="display:flex;"><span>    cudaDeviceProp prop;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> which Device;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaGetDevice</span>(<span style="color:#ff79c6">&amp;</span>whichDevice));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaGetDeviceProperties</span>(<span style="color:#ff79c6">&amp;</span>prop, whichDevice));
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>(prop.canMapHostMemory <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">1</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Device, cannot map memory. </span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//如果设备支持零拷贝内存，那么接下来就是将运行时置入能分配零拷贝内存的状态
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#6272a4">//通过调用cudaSetDeviceFlags()来实现这个操作，并且传递标志值cudaDeviceMapHost来表示我们希望设备映射主机内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaSetDeviceFlags</span>(cudaDeviceMapHost));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//运行两个测试，分别显示二者的执行时间，并推出应用程序：
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">float</span> elapsedTime <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">malloc_test</span>(N);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Time using cudaMalloc: %3.1f ms</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, elapsedTime);
+</span></span><span style="display:flex;"><span>    elapsedTime <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">cuda_host_alloc_test</span>(N);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Time using cudaHostAlloc: %3.1f ms</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, elapsedTime);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>下面是给出的核函数</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">#define imin(a, b) (a &lt; b ? a : b)
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">const</span> <span style="color:#8be9fd">int</span> N <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">33</span> <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">1024</span> <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">1024</span>;
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">const</span> <span style="color:#8be9fd">int</span> threadsPerBlock <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">256</span>;
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">const</span> <span style="color:#8be9fd">int</span> blocksPerGrid <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">imin</span>(<span style="color:#bd93f9">32</span>, (N <span style="color:#ff79c6">+</span> threadsPerBlock <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">1</span>) <span style="color:#ff79c6">/</span> threadsPerBlock);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>__global__ <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">dot</span>(<span style="color:#8be9fd">int</span> size, <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a, <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>b, <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>c){
+</span></span><span style="display:flex;"><span>    __shared__ <span style="color:#8be9fd">float</span> cache[threadsPerBlock];
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> tid <span style="color:#ff79c6">=</span> threadIdx.x <span style="color:#ff79c6">+</span> blockIdx.x <span style="color:#ff79c6">*</span> blockDim.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> cacheIndex <span style="color:#ff79c6">=</span> threadIdx.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> temp <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">while</span>(tid <span style="color:#ff79c6">&lt;</span> size){
+</span></span><span style="display:flex;"><span>        temp <span style="color:#ff79c6">+=</span> a[tid] <span style="color:#ff79c6">*</span> b[tid];
+</span></span><span style="display:flex;"><span>        tid <span style="color:#ff79c6">+=</span> blockDim.x <span style="color:#ff79c6">*</span> gridDim.x;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//设置cache中的值
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    cache[cacheIndex] <span style="color:#ff79c6">=</span> temp;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//同步这个线程块中的线程
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">__syncthreads</span>();
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//对于归约运算， threadsPerBlock必须为2的幂
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> blockDim.x <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">while</span>(i <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">if</span>(cacheIndex <span style="color:#ff79c6">&lt;</span> i){
+</span></span><span style="display:flex;"><span>            cache[cacheIndex] <span style="color:#ff79c6">+=</span> cache[cacheIndex <span style="color:#ff79c6">+</span> i];
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">__syncthreads</span>();
+</span></span><span style="display:flex;"><span>        i <span style="color:#ff79c6">/=</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>(cacheIndex <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>){
+</span></span><span style="display:flex;"><span>        c[blockIdx.x] <span style="color:#ff79c6">=</span> cache[<span style="color:#bd93f9">0</span>];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="使用多个gpu">使用多个GPU</h2>
+<p>我们将把点积应用程序修改为使用多个GPU。为了降低编码难度，我们将在上一个结构中把计算点积所需的全部数据都相加起来。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">struct</span> DataStruct{
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> deviceID;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> size;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>b;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> returnValue;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>这个结构包含了在计算点积时使用的设备标识，以及输入缓冲区的大小和指向两个输入缓冲区的指针a和b。最后，它还包含了一个成员用于保存a和b的点积运算结果。</p>
+<p>要使用N个GPU，我们首先需要准确地知道N值是多少。因此，在应用程序的开头调用cudaDeviceCount()，从而判断在系统中安装了多少个支持CUDA的处理器。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#50fa7b">main</span>(){
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> deviceCount;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaGetDeviceCount</span>(<span style="color:#ff79c6">&amp;</span>deviceCount));
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>(deviceCount <span style="color:#ff79c6">&lt;</span> <span style="color:#bd93f9">2</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;We need at least two compute 1.0 or greater devices, but only found %d</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, deviceCount);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//为输入缓冲区分配标准的主机内存，并按照之前的方式填充
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">float</span><span style="color:#ff79c6">*</span>)<span style="color:#50fa7b">malloc</span>(<span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>) <span style="color:#ff79c6">*</span> N);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_NULL</span>(a);
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>b <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">float</span><span style="color:#ff79c6">*</span>)<span style="color:#50fa7b">malloc</span>(<span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>) <span style="color:#ff79c6">*</span> N);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_NULL</span>(b);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//用数据填充主机内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> N; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        a[i] <span style="color:#ff79c6">=</span> i;
+</span></span><span style="display:flex;"><span>        b[i] <span style="color:#ff79c6">=</span> i <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>通过CUDA运行API来使用多个GPU时，要意识到每个GPU都需要由一个不同的CPU线程来控制。由于之前只是用了单个GPU，因此不需要担心这个问题。我们将多线程代码的大部分复杂性都移入到辅助代码文件book.h中。在精简了代码后，我们需要做的就是填充一个结构来执行计算。虽然在系统中可以有任意数量的GPU，但为了简单，在这里只使用两个：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    DataStruct data[<span style="color:#bd93f9">2</span>];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">0</span>].deviceID <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">0</span>].size <span style="color:#ff79c6">=</span> N <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">0</span>].a <span style="color:#ff79c6">=</span> a;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">0</span>].b <span style="color:#ff79c6">=</span> b;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">1</span>].deviceID <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">1</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">1</span>].size <span style="color:#ff79c6">=</span> N <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">1</span>].a <span style="color:#ff79c6">=</span> a <span style="color:#ff79c6">+</span> N <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">1</span>].b <span style="color:#ff79c6">=</span> b <span style="color:#ff79c6">+</span> N <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span></code></pre></div><p>我们将其中一个DataStruct变量传递给辅助函数start_thread()。此外，还将一个函数指针传给了start_thread()，新创建的线程将调用这个函数，这个示例中的线程函数为routine()。函数start_thread()将创建一个新的线程，这个线程将调用routine()，并将DataStruct变量作为参数传递进去。在应用程序的默认线程中也将调用routine()(因此只多创建了一个线程)。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    CUTThread <span style="color:#ff79c6">thread</span> <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">start_thread</span>(routine, <span style="color:#ff79c6">&amp;</span>(data[<span style="color:#bd93f9">0</span>]));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">routine</span>(<span style="color:#ff79c6">&amp;</span>(data[<span style="color:#bd93f9">1</span>]));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//通过调用end_thread()，主应用程序线程将等待另一个线程执行完成。
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">end_thread</span>(<span style="color:#ff79c6">thread</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//由于这两个线程都在main()的这个位置上执行完成，因此可以安全地释放内存并显示结果。
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">free</span>(a);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">free</span>(b);
+</span></span><span style="display:flex;"><span>	
+</span></span><span style="display:flex;"><span>	<span style="color:#6272a4">//我们要将每个线程的计算结果相加起来。
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Value calculated: %f</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, data[<span style="color:#bd93f9">0</span>].returnValue <span style="color:#ff79c6">+</span> data[<span style="color:#bd93f9">1</span>].returnValue);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>在声明routine()时指定该函数带有一个void*参数，并返回void*，这样在start_thread()部分代码保持不变的情况下可以任意实现线程函数。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">void</span><span style="color:#ff79c6">*</span> <span style="color:#50fa7b">routine</span>(<span style="color:#8be9fd">void</span> <span style="color:#ff79c6">*</span>pvoidData){
+</span></span><span style="display:flex;"><span>    DataStruct <span style="color:#ff79c6">*</span>data <span style="color:#ff79c6">=</span> (DataStruct<span style="color:#ff79c6">*</span>)pvoidData;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaSetDevice</span>(data<span style="color:#ff79c6">-&gt;</span>deviceID));
+</span></span></code></pre></div><p>除了调用cudaSetDevice()来指定希望使用的CUDA设备外，routine()的实现非常类似于之前提到的malloc_test()。我们为输入数据和临时计算结果分别分配了内存，随后调用cudaMemcpy()将每个输入数组复制到GPU。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> size <span style="color:#ff79c6">=</span> data<span style="color:#ff79c6">-&gt;</span>size;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a, <span style="color:#ff79c6">*</span>b, c, <span style="color:#ff79c6">*</span>partial_c;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>dev_a, <span style="color:#ff79c6">*</span>dev_b, <span style="color:#ff79c6">*</span>dev_partial_c;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在CPU上分配内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    a <span style="color:#ff79c6">=</span> data<span style="color:#ff79c6">-&gt;</span>a;
+</span></span><span style="display:flex;"><span>    b <span style="color:#ff79c6">=</span> data<span style="color:#ff79c6">-&gt;</span>b;
+</span></span><span style="display:flex;"><span>    partial_c <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">float</span><span style="color:#ff79c6">*</span>)<span style="color:#50fa7b">malloc</span>(blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在GPU上分配内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_a, size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>)));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_b, size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>)));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_partial_c, blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>)));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将数组“a”和“b”复制到GPU上
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(dev_a, a, size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaMemcpyHostToDevice));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(dev_b, b, size <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaMemcpyHostToDevice));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//启动点积核函数，复制回计算结果，并且结束CPU上的操作
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    dot<span style="color:#ff79c6">&lt;&lt;&lt;</span>blocksPerGrid, threadsPerBlock<span style="color:#ff79c6">&gt;&gt;&gt;</span>(size, dev_a, dev_b, dev_partial_c);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将数组“c”从GPU复制回CPU
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(partial_c, dev_partial_c, blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaMemcpyDeviceToHost));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//结束CPU上的操作
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    c <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> blocksPerGrid; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        c <span style="color:#ff79c6">+=</span> partial_c[i];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFree</span>(dev_a));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFree</span>(dev_b));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFree</span>(dev_partial_c));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//释放CPU侧的内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">free</span>(partial_c);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    data<span style="color:#ff79c6">-&gt;</span>returnValue <span style="color:#ff79c6">=</span> c;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="可移动的固定内存">可移动的固定内存</h2>
+<p>我们可以将固定内存分配为可移动的，这意味着可以在主机线程之间移动这块内存，并且每个线程都将其视为固定内存。要达到这个目的，需要使用cudaHostAlloc()来分配内存，并且在调用时使用一个新的标志：cudaHostAllocPortable。这个标志可以与其他标志一起使用，例如cudaHostAllocWriteCombined和cudaHostAllocMapped。这意味着在分配主机内存时，可将其作为可移动、零拷贝以及合并式写入等的任意组合。</p>
+<p>为了说明可移动固定内存的作用，我们将进一步修改使用多GPU的点积运算应用程序。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#50fa7b">main</span>(){
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> deviceCount;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaGetDeviceCount</span>(<span style="color:#ff79c6">&amp;</span>deviceCount));
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>(deviceCount <span style="color:#ff79c6">&lt;</span> <span style="color:#bd93f9">2</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;We need at least two compute 1.0 or greater devices, but only found %d</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, deviceCount);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    cudaDeviceProp prop;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> <span style="color:#bd93f9">2</span>; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaGetDeviceProperties</span>(<span style="color:#ff79c6">&amp;</span>prop, i));
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">if</span>(prop.canMapHostMemory <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">1</span>){
+</span></span><span style="display:flex;"><span>            <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Devide %d cannot map memory.</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, i);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a, <span style="color:#ff79c6">*</span>b;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaSetDevice</span>(<span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaSetDeviceFlags</span>(cudaDeviceMapHost));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaHostAlloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>a, N <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaHostAllocWriteCombined <span style="color:#ff79c6">|</span> cudaHostAllocPortable <span style="color:#ff79c6">|</span> cudaHostAllocMapped));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaHostAlloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>b, N <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaHostAllocWriteCombined <span style="color:#ff79c6">|</span> cudaHostAllocPortable <span style="color:#ff79c6">|</span> cudaHostAllocMapped));
+</span></span></code></pre></div><p>在使用cudaHostAlloc()分配页锁定内存时，首先要通过调用cudaSetDevice()来初始化设备。我们将新介绍的标志cudaHostAllocPortable传递给这两个内存分配操作。由于这些内存是在调用了cudaSetDevice(0)之后才分配的，因此，如果没有将这些内存指定为可移动的内存，那么只有第0个CUDA设备会把这些内存视为固定内存。</p>
+<p>继续之前的应用程序，为输入矢量生成数据，并采用之前的示例的方式来准备DataStruct结构。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#6272a4">//用数据填充主机内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> N; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        a[i] <span style="color:#ff79c6">=</span> i;
+</span></span><span style="display:flex;"><span>        b[i] <span style="color:#ff79c6">=</span> i <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//为使用多线程做好准备
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    DataStruct data[<span style="color:#bd93f9">2</span>];
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">0</span>].deviceID <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">0</span>].offset <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">0</span>].size <span style="color:#ff79c6">=</span> N <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">0</span>].a <span style="color:#ff79c6">=</span> a;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">0</span>].b <span style="color:#ff79c6">=</span> b;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">1</span>].deviceID <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">1</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">1</span>].offset <span style="color:#ff79c6">=</span> N <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">1</span>].size <span style="color:#ff79c6">=</span> N <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">1</span>].a <span style="color:#ff79c6">=</span> a;
+</span></span><span style="display:flex;"><span>    data[<span style="color:#bd93f9">1</span>].b <span style="color:#ff79c6">=</span> b;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//创建第二个线程，并调用routine()开始在每个设备上执行计算
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    CUTThread <span style="color:#ff79c6">thread</span> <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">start_thread</span>(routine, <span style="color:#ff79c6">&amp;</span>(data[<span style="color:#bd93f9">1</span>]));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">routine</span>(<span style="color:#ff79c6">&amp;</span>(data[<span style="color:#bd93f9">0</span>]));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">end_thread</span>(<span style="color:#ff79c6">thread</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//由于主机内存时由CUDA运行时分配的，因此需要用cudaFreeHost()而不是free()来释放它
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFreeHost</span>(a));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFreeHost</span>(b));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Value calculated: %f</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, data[<span style="color:#bd93f9">0</span>].returnValue <span style="color:#ff79c6">+</span> data[<span style="color:#bd93f9">1</span>].returnValue);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>为了在多GPU应用程序中支持可移动的固定内存和零拷贝内存，我们需要对routine()的代码进行两处修改。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">void</span><span style="color:#ff79c6">*</span> <span style="color:#50fa7b">routine</span>(<span style="color:#8be9fd">void</span> <span style="color:#ff79c6">*</span>pvoidData){
+</span></span><span style="display:flex;"><span>    DataStruct <span style="color:#ff79c6">*</span>data <span style="color:#ff79c6">=</span> (DataStruct<span style="color:#ff79c6">*</span>)pvoidData;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>(data<span style="color:#ff79c6">-&gt;</span>deviceID <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaSetDevice</span>(data<span style="color:#ff79c6">-&gt;</span>deviceID));
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaSetDeviceFlags</span>(cudaDeviceMapHost));
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>在多GPU版本的代码中，我们需要在routine()中调用cudaSetDevice()，从而确保每个线程控制一个不同的GPU。另一方面，在这个示例中，我们已经在主线程中调用了一次cudaSetDevice()。这么做的原因时为了在main()中分配固定内存。因此，我们只希望在还没有调用cudaSetDevice()的设备上调用cudaSetDevice()和cudaSetDeviceFlags()。也就是，如果devideID不是0，那么将调用这两个函数。虽然在第0个设备上再次调用这些函数会使代码更简洁，但是这种做法是错误的。一旦在某个线程上设置了这些设备，那么将不能再次调用cudaSetDevice()，即便传递的是相同的设备标识符。</p>
+<p>除了使用可移动的固定内存外，我们还使用了零拷贝内存，一边从GPU中直接访问这些内存。因此，我们使用cudaHostGetDevicePointer()来获得主机内存的有效设备指针，这与前面零拷贝示例中采用的方法一样。然而，你可能会注意到使用了标准的GPU内存来保存临时计算结果。这块内存同样是通过cudaMalloc()来分配的。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> size <span style="color:#ff79c6">=</span> data<span style="color:#ff79c6">-&gt;</span>size;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a, <span style="color:#ff79c6">*</span>b, c, <span style="color:#ff79c6">*</span>partial_c;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>dev_a, <span style="color:#ff79c6">*</span>dev_b, <span style="color:#ff79c6">*</span>dev_partial_c;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在CPU上分配内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    a <span style="color:#ff79c6">=</span> data<span style="color:#ff79c6">-&gt;</span>a;
+</span></span><span style="display:flex;"><span>    b <span style="color:#ff79c6">=</span> data<span style="color:#ff79c6">-&gt;</span>b;
+</span></span><span style="display:flex;"><span>    partial_c <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">float</span><span style="color:#ff79c6">*</span>)<span style="color:#50fa7b">malloc</span>(blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaHostGetDevicePointer</span>(<span style="color:#ff79c6">&amp;</span>dev_a, a, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaHostGetDevicePointer</span>(<span style="color:#ff79c6">&amp;</span>dev_b, b, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_partial_c, blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>)));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//计算GPU读取数据的偏移量“a”和“b”
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    dev_a <span style="color:#ff79c6">+=</span> data<span style="color:#ff79c6">-&gt;</span>offset;
+</span></span><span style="display:flex;"><span>    dev_b <span style="color:#ff79c6">+=</span> data<span style="color:#ff79c6">-&gt;</span>offset;
+</span></span><span style="display:flex;"><span>    dot<span style="color:#ff79c6">&lt;&lt;&lt;</span>blocksPerGrid, threadsPerBlock<span style="color:#ff79c6">&gt;&gt;&gt;</span>(size, dev_a, dev_b, dev_partial_c);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将数组“c“从GPU复制回CPU
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(partial_c, dev_partial_c, blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaMemcpyDeviceToHost));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//结束在CPU上的操作
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    c <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> blocksPerGrid; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        c <span style="color:#ff79c6">+=</span> partial_c[i];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaFree</span>(dev_partial_c));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//释放CPU上的内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">free</span>(partial_c);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    data<span style="color:#ff79c6">-&gt;</span>returnValue <span style="color:#ff79c6">=</span> c;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+
+                
+
+                
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%83/" data-toggle="tooltip" data-placement="top" title="CUDA学习(七)">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B9%9D/" data-toggle="tooltip" data-placement="top" title="CUDA学习(九)">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+                
+
+                
+
+
+
+            </div>
+
+            
+            
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+            
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+                <section>
+                    <hr>
+                    <h5>FRIENDS</h5>
+                    <ul class="list-inline">
+                        
+                        <li><a target="_blank" href=""></a></li>
+                        
+                    </ul>
+                </section>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">                  
+                    
+                    <li>
+                        <a href="mailto:KasterMist@gmail.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/KasterMist">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		            
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/letian-xie-8a0886282/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Kaster Mist Blog 2024
+                    
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        
+        
+        
+        
+            _containerSelector = 'div.post-container'
+        
+
+        
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        
+        $(selector).html('')
+
+        
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    
+
+
+    loadAsync("\/js\/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+
+</body>
+</html>

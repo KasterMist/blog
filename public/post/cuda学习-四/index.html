@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Kaster Mist Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="http://localhost:1313//img/home-bg-jeep.jpg">
+    <meta property="twitter:image" content="http://localhost:1313//img/home-bg-jeep.jpg" />
+    
+
+    
+    <meta name="title" content="CUDA学习(四)" />
+    <meta property="og:title" content="CUDA学习(四)" />
+    <meta property="twitter:title" content="CUDA学习(四)" />
+    
+
+    
+    <meta name="description" content="">
+    <meta property="og:description" content="" />
+    <meta property="twitter:description" content="" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>CUDA学习(四) | 喀斯特雾霭的博客 | Kaster Mist Blog</title>
+
+    <link rel="canonical" href="/post/cuda%E5%AD%A6%E4%B9%A0-%E5%9B%9B/">
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+
+    
+    <link rel="stylesheet" href="/css/font-awesome.all.min.css">
+
+    
+    
+
+    
+    <script src="/js/jquery.min.js"></script>
+
+    
+    <script src="/js/bootstrap.min.js"></script>
+
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    <script src="/js/lazysizes.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Kaster Mist Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">All Posts</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/cuda/">cuda</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/unix/">unix</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/archive//">ARCHIVE</a></li>
+                    
+                        <li><a href="/notes//">NOTES</a></li>
+                    
+                        <li><a href="/about//">ABOUT</a></li>
+                    
+		            <li>
+                        <a href="/search"><i class="fa fa-search"></i></a>
+		           </li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/home-bg-jeep.jpg')
+    }
+</style>
+
+<header class="intro-header" >
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>CUDA学习(四)</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        
+                            Posted by 
+                            
+                                    Kaster Mist Blog
+                             
+                            on 
+                            Sunday, February 18, 2024
+                            
+                            
+                            
+                            
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <p>这一章会介绍如何在CUDA C中使用常量内存、了解常量内存的性能特性以及学习如何使用CUDA事件来测量应用程序的性能。</p>
+<!-- raw HTML omitted -->
+<h2 id="常量内存">常量内存</h2>
+<p>到目前为止，我们知道CUDA C程序中可以使用全局内存和共享内存。但是，CUDA C还支持另一种类型的内存，即常量内存。常量内存用于保存在核函数执行期间不会发生变化的数据。在某些情况下，用常量内存来替换全局内存能有效地减少内存带宽。</p>
+<h3 id="在gpu上实现光线跟踪">在GPU上实现光线跟踪</h3>
+<p>我们给出一个简单的光线跟踪应用程序示例来学习。由于OpenGL和DirectX等API都不是专门为了实现光线跟踪而设计的，因此我们必须使用CUDA C来实现基本的光线跟踪器。本示例构造的光线跟踪器非常简单，旨在学习常量内存的使用上(并不能通过示例代码来构建一个功能完备的渲染器)。这个光线跟踪器只支持一组包含球状物体的场景，并且相机被固定在了Z轴，面向原点。此外，示例代码也不支持场景中的任何照明，从而避免二次光线带来的复杂性。代码也不计算照明效果，而只是为每个球面分配一个颜色值，如果它们是可见的，则通过某个预先计算的值对其着色。</p>
+<p>光线跟踪器将从每个像素发射一道光线，并且跟踪到这些光线会命中哪些球面。此外，它还将跟踪每道命中光线的深度。当一道光线穿过多个球面时，只有最接近相机的球面才会被看到。这个代码的光线跟踪器会把相机看不到的球面隐藏起来。</p>
+<p>通过一个数据结构对球面建模，在数据结构中包含了球面的中心坐标(x, y, z)，半径radius，以及颜色值(r, g, b)。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">#define INF 2e10f
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">struct</span> sphere{
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> r, g, b;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> radius;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> x, y, z;
+</span></span><span style="display:flex;"><span>    __device__ <span style="color:#8be9fd">float</span> <span style="color:#50fa7b">hit</span>(<span style="color:#8be9fd">float</span> ox, <span style="color:#8be9fd">float</span> oy, <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>n){
+</span></span><span style="display:flex;"><span>        <span style="color:#8be9fd">float</span> dx <span style="color:#ff79c6">=</span> ox <span style="color:#ff79c6">-</span> x;
+</span></span><span style="display:flex;"><span>        <span style="color:#8be9fd">float</span> dy <span style="color:#ff79c6">=</span> oy <span style="color:#ff79c6">-</span> y;
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">if</span>(dx <span style="color:#ff79c6">*</span> dx <span style="color:#ff79c6">+</span> dy <span style="color:#ff79c6">*</span> dy <span style="color:#ff79c6">&lt;</span> radius <span style="color:#ff79c6">*</span> radius){
+</span></span><span style="display:flex;"><span>            <span style="color:#8be9fd">float</span> dz <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">sqrtf</span>(radius <span style="color:#ff79c6">*</span> radius <span style="color:#ff79c6">-</span> dx <span style="color:#ff79c6">*</span> dx <span style="color:#ff79c6">-</span> dy <span style="color:#ff79c6">*</span> dy);
+</span></span><span style="display:flex;"><span>            <span style="color:#ff79c6">*</span>n <span style="color:#ff79c6">=</span> dz <span style="color:#ff79c6">/</span> <span style="color:#50fa7b">sqrtf</span>(radius <span style="color:#ff79c6">*</span> radius);
+</span></span><span style="display:flex;"><span>            <span style="color:#ff79c6">return</span> dz <span style="color:#ff79c6">+</span> z;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">-</span>INF;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>这个结构中定义了一个方法hit(float ox, float oy, float *n)。对于来自(ox, oy)处像素的光线，这个方法将计算光线是否与这个球面相交。如果光线与球面相交，那么这个方法将计算从相机到光线命中球面处的距离。我们需要这个信息，因为当光线命中多个球面时，只有最接近相机的球面才会被看见。</p>
+<p>main()函数遵循了与前面示例大致相同的代码结构。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">#include</span> <span style="color:#ff79c6">&#34;cuda.h&#34;</span><span style="color:#ff79c6">
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6">#include</span> <span style="color:#ff79c6">&#34;../common/book.h&#34;</span><span style="color:#ff79c6">
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6">#include</span> <span style="color:#ff79c6">&#34;cpu_bitmap.h&#34;</span><span style="color:#ff79c6">
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">#define rnd(x) (x * rand() / RAND_MAX)
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6">#define SPHERES 20
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span>Sphere <span style="color:#ff79c6">*</span>s;
+</span></span><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#50fa7b">main</span>(){
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//记录起始时间
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    cudaEvent_ start, stop;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>start));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>stop));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventRecord</span>(start, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    CPUBitmap <span style="color:#50fa7b">bitmap</span>(DIM, DIM);
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span> <span style="color:#ff79c6">*</span>dev_bitmap;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在GPU上分配内存以计算输出位图
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_bitmap, bitmap.<span style="color:#50fa7b">image_size</span>()));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//为Sphere数据集分配内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>s, <span style="color:#ff79c6">sizeof</span>(Sphere) <span style="color:#ff79c6">*</span> SPHERES));
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>在分配输入数据和输出数据的内存后，我们将随机地生成球面的中心坐标，颜色以及半径。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#6272a4">//分配临时内存，对其初始化，并复制到GPU上的内存，然后释放临时内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>Sphere <span style="color:#ff79c6">*</span>temp_s <span style="color:#ff79c6">=</span> (Sphere<span style="color:#ff79c6">*</span>) <span style="color:#50fa7b">malloc</span>(<span style="color:#ff79c6">sizeof</span>(Sphere) <span style="color:#ff79c6">*</span> SPHERES);
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> SPHERES; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>    temp_s[i].r <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1.0f</span>);
+</span></span><span style="display:flex;"><span>    temp_s[i].g <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1.0f</span>);
+</span></span><span style="display:flex;"><span>    temp_s[i].b <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1.0f</span>);
+</span></span><span style="display:flex;"><span>    temp_s[i].x <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1000.0f</span>) <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">500</span>;
+</span></span><span style="display:flex;"><span>    temp_s[i].y <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1000.0f</span>) <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">500</span>;
+</span></span><span style="display:flex;"><span>    temp_s[i].z <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1000.0f</span>) <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">500</span>;
+</span></span><span style="display:flex;"><span>    temp_s[i].radius <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">100.0f</span>) <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">20</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>当前，程序将生成一个包含20个球面的随机数组，但这个数量值是通过一个#define宏指定的，因此可以相应的做出调整。</p>
+<p>通过cudaMemcpy()将这个球面数组复制到GPu，然后释放临时缓冲区。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(s, temps, <span style="color:#ff79c6">sizeof</span>(Sphere) <span style="color:#ff79c6">*</span> SPHERES, cudaMemcpyHostToDevice));
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">free</span>(temp_s);
+</span></span></code></pre></div><p>现在，输入数据位于GPU上，并且我们已经为输出数据分配好了空间，因此可以启动核函数。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#6272a4">//从球面数据汇总生成一张位图
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>dim3 <span style="color:#50fa7b">grids</span>(DIM <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">16</span>, DIM <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">16</span>);
+</span></span><span style="display:flex;"><span>dim3 <span style="color:#50fa7b">threads</span>(<span style="color:#bd93f9">16</span>, <span style="color:#bd93f9">16</span>);
+</span></span><span style="display:flex;"><span>kernel<span style="color:#ff79c6">&lt;&lt;&lt;</span>grids, threads<span style="color:#ff79c6">&gt;&gt;&gt;</span>(dev_bitmap);
+</span></span></code></pre></div><p>这个核函数将执行光线跟踪计算并从输入的一组球面中为每个像素计算颜色数据。最后，我们把输出图像从GPU中复制回来，并显示它。我们还要释放所有已经分配但还未释放的内存。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#6272a4">//将位图从GPU复制回到CPU以显示
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span><span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(bitmap.<span style="color:#50fa7b">get_ptr</span>(), dev_bitmap, bitmap.<span style="color:#50fa7b">image_size</span>(), cudaMemcpyDeviceToHost));
+</span></span><span style="display:flex;"><span>bitmap.<span style="color:#50fa7b">display_and_exit</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#6272a4">//释放内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span><span style="color:#50fa7b">cudaFree</span>(dev_bitmap);
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">cudaFree</span>(s);
+</span></span></code></pre></div><p>下面的代码将介绍如何实现核函数的光线跟踪算法。每个线程都会为输出影像中的一个像素计算颜色值，因此我们遵循一种惯用的方式，计算每个线程对应的x坐标和y坐标，并且根据这两个坐标来计算输出缓冲区的偏移。此外，我们还将把图像坐标(x, y, z)偏移DIM/2，这样z轴将穿过图像的中心。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>__global__ <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">kernel</span>(<span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span> <span style="color:#ff79c6">*</span>ptr){
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将threadIdx/BlockIdx映射到像素位置
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">int</span> x <span style="color:#ff79c6">=</span> threadIdx.x <span style="color:#ff79c6">+</span> blockIdx.x <span style="color:#ff79c6">*</span> blockDim.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> y <span style="color:#ff79c6">=</span> threadIdx.y <span style="color:#ff79c6">+</span> blockIdx.y <span style="color:#ff79c6">*</span> blockDim.y;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> offset <span style="color:#ff79c6">=</span> x <span style="color:#ff79c6">+</span> y <span style="color:#ff79c6">*</span> blockDim.x <span style="color:#ff79c6">*</span> gridDim.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> ox <span style="color:#ff79c6">=</span> x <span style="color:#ff79c6">-</span> DIM <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> oy <span style="color:#ff79c6">=</span> y <span style="color:#ff79c6">-</span> DIM <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//由于每条光线都需要判断与球面相交的情况，因此我们现在对球面数组进行迭代，并判断每个球面的命中情况。
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">float</span> r <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>, g <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>, b <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> maxz <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">-</span>INF;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> SPHERES; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#8be9fd">float</span> n;
+</span></span><span style="display:flex;"><span>        <span style="color:#8be9fd">float</span> t <span style="color:#ff79c6">=</span> s[i].<span style="color:#50fa7b">hit</span>(ox, oy, <span style="color:#ff79c6">&amp;</span>n);
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">if</span>(t <span style="color:#ff79c6">&gt;</span> maxz){
+</span></span><span style="display:flex;"><span>            <span style="color:#8be9fd">float</span> fscale <span style="color:#ff79c6">=</span> n;
+</span></span><span style="display:flex;"><span>            r <span style="color:#ff79c6">=</span> s[i].r <span style="color:#ff79c6">*</span> fscale;
+</span></span><span style="display:flex;"><span>            g <span style="color:#ff79c6">=</span> s[i].g <span style="color:#ff79c6">*</span> fscale;
+</span></span><span style="display:flex;"><span>            b <span style="color:#ff79c6">=</span> s[i].b <span style="color:#ff79c6">*</span> fscale;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在判断了每个球面的相交情况后，可以将当前颜色值保存到输出图像中
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    ptr[offset <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">4</span> <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">0</span>] <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">int</span>)(r <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">255</span>);
+</span></span><span style="display:flex;"><span>    ptr[offset <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">4</span> <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">1</span>] <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">int</span>)(g <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">255</span>);
+</span></span><span style="display:flex;"><span>    ptr[offset <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">4</span> <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">1</span>] <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">int</span>)(b <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">255</span>);
+</span></span><span style="display:flex;"><span>    ptr[offset <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">4</span> <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">3</span>] <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">255</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h4 id="通过常量内存来实现光线跟踪">通过常量内存来实现光线跟踪</h4>
+<p>上述代码中并没有提到常量内存。下面的代码将使用常量内存来修改这个例子。由于常量内存无法修改，因此显然无法用常量内存来保存输出图像的数据。在这个示例中只有一个输入数据，即球面数组，因此应该将这个数据保存到常量内存中。</p>
+<p>声明数组时，要在前面加上__constant__修饰符。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>__constant__ Sphere s[SPHERES];
+</span></span></code></pre></div><p>最初的示例中，我们声明了一个指针，然后通过cudaMalloc()来为指针分配GPU内存。当我们将其修改为常量内存时，同样要将这个声明修改为在常量内存中静态地分配空间。我们不再需要对球面数组调用cudaMalloc()或cudaFree()。而是在编译时为这个数组提交一个固定的大小。将main()函数修改为常量内存的代码如下:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#50fa7b">main</span>(){
+</span></span><span style="display:flex;"><span>    CPUBitmap <span style="color:#50fa7b">bitmap</span>(DIM, DIM);
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span> <span style="color:#ff79c6">*</span>dev_bitmap;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在GPU上分配内存以计算输出位图
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_bitmap, bitmap.<span style="color:#50fa7b">image_size</span>()));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//分配临时内存，对其初始化，并复制到GPU上的内存，然后释放临时内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    Sphere <span style="color:#ff79c6">*</span>temp_s <span style="color:#ff79c6">=</span> (Sphere<span style="color:#ff79c6">*</span>) <span style="color:#50fa7b">malloc</span>(<span style="color:#ff79c6">sizeof</span>(Sphere) <span style="color:#ff79c6">*</span> SPHERES);
+</span></span><span style="display:flex;"><span>	<span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> SPHERES; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        temp_s[i].r <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1.0f</span>);
+</span></span><span style="display:flex;"><span>        temp_s[i].g <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1.0f</span>);
+</span></span><span style="display:flex;"><span>        temp_s[i].b <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1.0f</span>);
+</span></span><span style="display:flex;"><span>        temp_s[i].x <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1000.0f</span>) <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">500</span>;
+</span></span><span style="display:flex;"><span>        temp_s[i].y <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1000.0f</span>) <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">500</span>;
+</span></span><span style="display:flex;"><span>        temp_s[i].z <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1000.0f</span>) <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">500</span>;
+</span></span><span style="display:flex;"><span>        temp_s[i].radius <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">100.0f</span>) <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">20</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpyToSymbol</span>(s, temp_s, <span style="color:#ff79c6">sizeof</span>(Sphere) <span style="color:#ff79c6">*</span> SPHERES));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">free</span>(temp_s);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//从球面数据中生成一张位图
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    dim3 <span style="color:#50fa7b">grids</span>(DIM <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">16</span>, DIM <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">16</span>);
+</span></span><span style="display:flex;"><span>    dim3 <span style="color:#50fa7b">threads</span>(<span style="color:#bd93f9">16</span>, <span style="color:#bd93f9">16</span>);
+</span></span><span style="display:flex;"><span>    kernel<span style="color:#ff79c6">&lt;&lt;&lt;</span>grids, threads<span style="color:#ff79c6">&gt;&gt;&gt;</span>(dev_bitmap);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将位图从GPU复制回到CPU以显示
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(bitmap.<span style="color:#50fa7b">get_ptr</span>(), dev_bitmap, bitmap.<span style="color:#50fa7b">image_size</span>(), cudaMemcpyDeviceToHost));
+</span></span><span style="display:flex;"><span>    bitmap.<span style="color:#50fa7b">display_and_exit</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//释放内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">cudaFree</span>(dev_bitmap);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>cudaMemcpyToSymbol()与参数为cudaMemcpyHostToDevice()的cudaMemcpy()之间唯一差异时cudaMemcpyToSymbol()会复制到常量内存，而cudaMemcpy()会复制到全局内存。</p>
+<h3 id="使用事件来测量性能">使用事件来测量性能</h3>
+<p>如何判断常量内存对程序性能有着多大影响？最简单的方式就是判断哪个版本的执行事件更短。使用CPU计时器或者操作系统中的某个计时器会带来各种延迟。为了测量GPU在某个任务上话费的时间，我们将使用CUDA的事件API。</p>
+<p>CUDA中的事件本质上是一个GPU时间戳，这个时间戳是在用户指定的时间点上记录的。由于GPU本身支持记录时间戳，因此就避免了当使用CPU定时器来统计GPU执行的事件时可能遇到的诸多问题。比如，下面的代码开头告诉CUDA运行时记录当前的时间，首先创建一个事件，然后记录这个事件。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">cudaEvent_t</span> start;
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>start);
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">cudaEventRecord</span>(start, <span style="color:#bd93f9">0</span>);
+</span></span></code></pre></div><p>要统计一段代码的执行时间，不仅要创建一个起始事件，还要创建一个结束事件。当在GPU上执行某个工作时，我们不仅要告诉CUDA运行时记录起始时间，还要记录结束时间:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">cudaEvent_t</span> start, stop;
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>start);
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>stop);
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">cudaEventRecord</span>(start, <span style="color:#bd93f9">0</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#6272a4">//在GPU执行一些工作
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">cudaEventRecord</span>(stop, <span style="color:#bd93f9">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">cudaEventSynchronize</span>(stop); <span style="color:#6272a4">//表示stop事件之前的所有GPU工作已经完成，可以安全读取在stop中保存的时间戳
+</span></span></span></code></pre></div><p>下面是对光线跟踪器进行性能测试的代码:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#50fa7b">main</span>(){
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//记录起始时间
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">cudaEvent_t</span> start, stop;
+</span></span><span style="display:flex;"><span>	<span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>start);
+</span></span><span style="display:flex;"><span>	<span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>stop);
+</span></span><span style="display:flex;"><span>	<span style="color:#50fa7b">cudaEventRecord</span>(start, <span style="color:#bd93f9">0</span>);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    CPUBitmap <span style="color:#50fa7b">bitmap</span>(DIM, DIM);
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span> <span style="color:#ff79c6">*</span>dev_bitmap;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在GPU上分配内存以计算输出位图
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_bitmap, bitmap.<span style="color:#50fa7b">image_size</span>()));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//分配临时内存，对其初始化，并复制到GPU上的内存，然后释放临时内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    Sphere <span style="color:#ff79c6">*</span>temp_s <span style="color:#ff79c6">=</span> (Sphere<span style="color:#ff79c6">*</span>) <span style="color:#50fa7b">malloc</span>(<span style="color:#ff79c6">sizeof</span>(Sphere) <span style="color:#ff79c6">*</span> SPHERES);
+</span></span><span style="display:flex;"><span>	<span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> SPHERES; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        temp_s[i].r <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1.0f</span>);
+</span></span><span style="display:flex;"><span>        temp_s[i].g <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1.0f</span>);
+</span></span><span style="display:flex;"><span>        temp_s[i].b <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1.0f</span>);
+</span></span><span style="display:flex;"><span>        temp_s[i].x <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1000.0f</span>) <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">500</span>;
+</span></span><span style="display:flex;"><span>        temp_s[i].y <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1000.0f</span>) <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">500</span>;
+</span></span><span style="display:flex;"><span>        temp_s[i].z <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">1000.0f</span>) <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">500</span>;
+</span></span><span style="display:flex;"><span>        temp_s[i].radius <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">rnd</span>(<span style="color:#bd93f9">100.0f</span>) <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">20</span>;
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpyToSymbol</span>(s, temp_s, <span style="color:#ff79c6">sizeof</span>(Sphere) <span style="color:#ff79c6">*</span> SPHERES));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">free</span>(temp_s);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//从球面数据中生成一张位图
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    dim3 <span style="color:#50fa7b">grids</span>(DIM <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">16</span>, DIM <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">16</span>);
+</span></span><span style="display:flex;"><span>    dim3 <span style="color:#50fa7b">threads</span>(<span style="color:#bd93f9">16</span>, <span style="color:#bd93f9">16</span>);
+</span></span><span style="display:flex;"><span>    kernel<span style="color:#ff79c6">&lt;&lt;&lt;</span>grids, threads<span style="color:#ff79c6">&gt;&gt;&gt;</span>(dev_bitmap);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将位图从GPU复制回到CPU以显示
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(bitmap.<span style="color:#50fa7b">get_ptr</span>(), dev_bitmap, bitmap.<span style="color:#50fa7b">image_size</span>(), cudaMemcpyDeviceToHost));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//获得结束时间，并显示计时结果
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventRecord</span>(stop, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventSynchronize</span>(stop));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> elapsedTime;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventElapsedTime</span>(<span style="color:#ff79c6">&amp;</span>elapsedTime, start, stop));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Time to generate: %3.1f ms</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, elapsedTime);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventDestroy</span>(start));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventDestroy</span>(stop));    
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//显示位图
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    bitmap.<span style="color:#50fa7b">display_and_exit</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//释放内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">cudaFree</span>(dev_bitmap);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+
+                
+
+                
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%89/" data-toggle="tooltip" data-placement="top" title="CUDA学习(三)">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%94/" data-toggle="tooltip" data-placement="top" title="CUDA学习(四)">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+                
+
+                
+
+
+
+            </div>
+
+            
+            
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+            
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+                <section>
+                    <hr>
+                    <h5>FRIENDS</h5>
+                    <ul class="list-inline">
+                        
+                        <li><a target="_blank" href=""></a></li>
+                        
+                    </ul>
+                </section>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">                  
+                    
+                    <li>
+                        <a href="mailto:KasterMist@gmail.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/KasterMist">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		            
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/letian-xie-8a0886282/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Kaster Mist Blog 2024
+                    
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        
+        
+        
+        
+            _containerSelector = 'div.post-container'
+        
+
+        
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        
+        $(selector).html('')
+
+        
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    
+
+
+    loadAsync("\/js\/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+
+</body>
+</html>
