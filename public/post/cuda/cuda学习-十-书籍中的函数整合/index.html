@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Kaster Mist Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="http://localhost:1313//img/background.jpg">
+    <meta property="twitter:image" content="http://localhost:1313//img/background.jpg" />
+    
+
+    
+    <meta name="title" content="CUDA学习(十)--书籍中的函数整合" />
+    <meta property="og:title" content="CUDA学习(十)--书籍中的函数整合" />
+    <meta property="twitter:title" content="CUDA学习(十)--书籍中的函数整合" />
+    
+
+    
+    <meta name="description" content="">
+    <meta property="og:description" content="" />
+    <meta property="twitter:description" content="" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>CUDA学习(十)--书籍中的函数整合 | 喀斯特雾霭的博客 | Kaster Mist Blog</title>
+
+    <link rel="canonical" href="/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%8D%81-%E4%B9%A6%E7%B1%8D%E4%B8%AD%E7%9A%84%E5%87%BD%E6%95%B0%E6%95%B4%E5%90%88/">
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+
+    
+    <link rel="stylesheet" href="/css/font-awesome.all.min.css">
+
+    
+    
+
+    
+    <script src="/js/jquery.min.js"></script>
+
+    
+    <script src="/js/bootstrap.min.js"></script>
+
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    <script src="/js/lazysizes.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Kaster Mist Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">All Posts</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/cuda/">cuda</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/unix/">unix</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/archive//">ARCHIVE</a></li>
+                    
+                        <li><a href="/notes//">NOTES</a></li>
+                    
+                        <li><a href="/about//">ABOUT</a></li>
+                    
+		            <li>
+                        <a href="/search"><i class="fa fa-search"></i></a>
+		           </li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/background.jpg')
+    }
+</style>
+
+<header class="intro-header" >
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>CUDA学习(十)--书籍中的函数整合</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        
+                            Posted by 
+                            
+                                    Kaster Mist Blog
+                             
+                            on 
+                            Monday, March 11, 2024
+                            
+                            
+                            
+                            
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <p>前面几章主要是对参考书目的内容进行一个概括。本章将根据参考书目的内容对所学到的所有函数进行一个整理和总结，以便复习和参考。英伟达的官方网站包含了所有的CUDA函数，可参考https://developer.download.nvidia.cn/compute/DevZone/docs/html/C/doc/html/index.html</p>
+<h2 id="基本语法">基本语法</h2>
+<p>这部分将介绍一下CUDA的基本语法，即参数的创建、传递、释放。</p>
+<h4 id="cudamalloc">cudaMalloc</h4>
+<p>cudaMalloc函数的语法结构如下表示：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">cudaError_t</span> <span style="color:#50fa7b">cudaMalloc</span>(<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span> devPtr, <span style="color:#8be9fd">size_t</span> size)
+</span></span></code></pre></div><p>与C的malloc相似，cudaMalloc在设备上分配“size”字节大小的线性内存，并在*devPtr中返回一个指向所分配内存的指针。所分配的内存对于任何类型的变量都是适当对齐的。如果分配成功，则返回<code>cudaSuccess</code>，如果分配失败，则会返回<code>cudaErrorMemoryAllocation</code>。</p>
+<p>注意，void** devPtr表示需要传递指针的地址。</p>
+<h4 id="cudamemcpy">cudaMemcpy</h4>
+<p>cudaMemcpy函数的语法如下所示：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">cudaError_t</span> <span style="color:#50fa7b">cudaMemcpy</span>(<span style="color:#8be9fd">void</span><span style="color:#ff79c6">*</span> dst, <span style="color:#ff79c6">const</span> <span style="color:#8be9fd">void</span><span style="color:#ff79c6">*</span> src, <span style="color:#8be9fd">size_t</span>, count, <span style="color:#ff79c6">enum</span> cudaMemcpyKind kind)
+</span></span></code></pre></div><p>将“count”字节从src指向的内存区域复制到dst指向的内存区。</p>
+<p>dst是目标位置destination，src是源位置source。</p>
+<p>kind用于规定复制的方向，总共有以下几种：</p>
+<ul>
+<li>cudaMemcpyHostToHost</li>
+<li>cudaMemcpyHostToDevice</li>
+<li>cudaMemcpyDeviceToHost</li>
+<li>cudaMemcpyDeviceToDevice</li>
+</ul>
+<p>返回的值有：</p>
+<ul>
+<li>cudaSuccess</li>
+<li>cudaErrorInvalidValue</li>
+<li>cudaErrorInvalidDevicePointer</li>
+<li>cudaErrorInvalidMemcpyDirection</li>
+</ul>
+<p>注：此函数还可能返回以前异步启动的错误代码。</p>
+<h4 id="cudafree">cudaFree</h4>
+<p>cudaFree函数的语法如下所示</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">cudaError_t</span> <span style="color:#50fa7b">cudaFree</span>(<span style="color:#8be9fd">void</span><span style="color:#ff79c6">*</span> devPtr)
+</span></span></code></pre></div><p>释放devPtr指向的内存。与cudaMalloc()或者cudaMallocPitch()一一对应，对之前分配的内存进行释放。</p>
+<p>返回的值有：</p>
+<ul>
+<li>cudaSuccess</li>
+<li>cudaErrorInvalidDevicePointer</li>
+<li>cudaErrorInitializationError</li>
+</ul>
+<p>注：此函数还可能返回以前异步启动的错误代码。</p>
+<h4 id="核函数">核函数</h4>
+<p>核函数前面需要加上__global__，此方法会将函数标记为设备代码“Device Code”。函数格式可以为：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>__global__ <span style="color:#50fa7b">kernel</span>(arguments)
+</span></span></code></pre></div><p>进行函数调用的格式可以为：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>kernel<span style="color:#ff79c6">&lt;&lt;&lt;</span>blocksPerGrid, threadsPerBlock<span style="color:#ff79c6">&gt;&gt;&gt;</span>(arguments)
+</span></span></code></pre></div><p>下面将详细介绍threads，blocks相关概念。也可以参考以下链接：https://zhuanlan.zhihu.com/p/675603584</p>
+<p>CUDA里面用Grid和Block作为线程组织的组织单位，一个Grid可包含了N个Block，一个Block包含N个thread。</p>
+<p>我们一般用得到的参数是gridDim, blockDim, blockIdx和threadIdx。</p>
+<ul>
+<li>gridDim: dim3类型，表示blocks在grid里面数量的维度。</li>
+<li>blockDim：dim3类型，表示threads在block里面数量的维度。</li>
+<li>blockIdx：dim3类型，表示blocks在grid里面的索引。</li>
+<li>threadIdx：dim3类型，表示threads在block里面的索引。</li>
+</ul>
+<p>
+  <img src="/imgs/CUDA_10_1.png" alt="CUDA_10_1">
+
+</p>
+<p>上图给了一个参考的thread和block的结构。在上面的结构中，一个grid有2*3个block块，每个block块各有15*15个thread。x轴是从左往右，y轴是从上到下(示例图片并没有显示z轴，即z轴最大值为1)。</p>
+<p>如何获取某个thread的坐标，可以分为以下几步：</p>
+<ol>
+<li>
+<p>计算thread在block中的位置
+$$
+threadInBlock = threadIdx.x + threadIdx.y * blockDim.x + threadIdx.z * blockDim.x * blockDim.y
+$$</p>
+</li>
+<li>
+<p>计算该block在grid中的位置
+$$
+blockInGrid = blockIdx.x + blockIdx.y * gridDim.x + blockIdx.z * gridDim.x * gridDim.y
+$$</p>
+</li>
+<li>
+<p>计算每个block的线程，计算得出某个thread的位置索引
+$$
+oneBlockSize = blockDim.x * blockDim.y * blockDim.z
+$$</p>
+</li>
+</ol>
+<p>$$
+idx = threadInBlock + oneBlockSize * blockInGrid
+$$</p>
+<h2 id="查询设备">查询设备</h2>
+<h4 id="cudagetdevice">cudaGetDevice</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">cudaError_t</span> <span style="color:#50fa7b">cudaGetDevice</span>(<span style="color:#8be9fd">int</span><span style="color:#ff79c6">*</span> device)
+</span></span></code></pre></div><p>将当前主机线程调用的设备索引返回给device的地址。</p>
+<h4 id="cudagetdevicecount">cudaGetDeviceCount</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">cudaError_t</span> <span style="color:#50fa7b">cudaGetDeviceCount</span>(<span style="color:#8be9fd">int</span><span style="color:#ff79c6">*</span> count)
+</span></span></code></pre></div><p>返回可执行的设备数量到count的地址。如果没有这样的设备，则返回cudaErrorNoDevice。如果无法加载驱动程序来确定是否存在任何此类设备，则返回cudaErrorInsufficientDriver。</p>
+<h4 id="cudagetdeviceproperties">cudaGetDeviceProperties</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">cudaError_t</span> <span style="color:#50fa7b">cudaGetDeviceProperties</span>(<span style="color:#ff79c6">struct</span> cudaDeviceProp<span style="color:#ff79c6">*</span> prop, <span style="color:#8be9fd">int</span> device)
+</span></span></code></pre></div><p>将device的属性的信息传递给prop。cudaDeviceProp结构可以参考下面的链接：</p>
+<p><a href="https://developer.download.nvidia.cn/compute/DevZone/docs/html/C/doc/html/group__CUDART__DEVICE_g5aa4f47938af8276f08074d09b7d520c.html#g5aa4f47938af8276f08074d09b7d520c">https://developer.download.nvidia.cn/compute/DevZone/docs/html/C/doc/html/group__CUDART__DEVICE_g5aa4f47938af8276f08074d09b7d520c.html#g5aa4f47938af8276f08074d09b7d520c</a></p>
+<h2 id="内存">内存</h2>
+<h4 id="共享内存shared-memory">共享内存(Shared Memory)</h4>
+<ul>
+<li>共享内存是在GPU的<strong>每个线程块（block）中</strong>共享的内存空间，用于线程之间的通信和数据共享。</li>
+<li>共享内存的访问速度比全局内存更快，因为它位于芯片上，与处理器更近。</li>
+<li>共享内存的使用需要程序员显式地将数据从全局内存复制到共享内存中，并在使用完毕后将数据写回全局内存。</li>
+<li>共享内存在内核中的声明是在内核函数的参数列表之外使用 <code>__shared__</code> 关键字。</li>
+</ul>
+<h4 id="全局内存global-memory">全局内存(Global Memory)</h4>
+<ul>
+<li>全局内存是GPU中<strong>所有线程</strong>都可以访问的主要内存池，在设备内存中分配。</li>
+<li>全局内存的访问速度相对较慢，因为它位于芯片之外，需要通过总线等方式与GPU核心通信。</li>
+<li>全局内存通常用于存储大规模的数据，如数组、结构体等。</li>
+<li>全局内存可以通过 <code>cudaMalloc</code> 分配内存，并使用 <code>cudaMemcpy</code> 在主机内存和设备内存之间进行数据传输。</li>
+</ul>
+<h4 id="常量内存constant-memory">常量内存(Constant Memory)</h4>
+<ul>
+<li>
+<p>常量内存是GPU上的一种只读内存，用于存储在GPU核心中被<strong>所有线程共享的常量数据</strong>。</p>
+</li>
+<li>
+<p>常量内存通常用于存储对所有线程都是常量的数据，比如常量数组、常量参数等。</p>
+</li>
+<li>
+<p>常量内存的优势在于其高速缓存和对齐的特性，可以加速访问频繁的常量数据。</p>
+</li>
+<li>
+<p>常量内存的访问速度比全局内存更快，但相对来说容量较小。</p>
+</li>
+<li>
+<p>常量内存通常在内核启动之前被初始化，并且其内容在内核执行期间不会改变。可以使用 CUDA 的 <code>__constant__</code> 修饰符定义常量内存，使用 <code>cudaMemcpyToSymbol</code> 将数据从主机内存拷贝到常量内存中。</p>
+</li>
+</ul>
+<p>以下是GPT生成的一个常量内存的使用例子：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">#include</span> <span style="color:#ff79c6">&lt;cuda_runtime.h&gt;</span><span style="color:#ff79c6">
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6">#include</span> <span style="color:#ff79c6">&lt;stdio.h&gt;</span><span style="color:#ff79c6">
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#6272a4">// 定义常量数组大小
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span><span style="color:#ff79c6">#define ARRAY_SIZE 10
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#6272a4">// 声明常量内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>__constant__ <span style="color:#8be9fd">int</span> constantArray[ARRAY_SIZE];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#6272a4">// CUDA内核函数
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>__global__ <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">kernel</span>(<span style="color:#8be9fd">int</span> <span style="color:#ff79c6">*</span>result) {
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// 获取线程索引
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">int</span> idx <span style="color:#ff79c6">=</span> threadIdx.x;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// 使用常量内存中的数据进行计算
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    result[idx] <span style="color:#ff79c6">=</span> constantArray[idx] <span style="color:#ff79c6">*</span> idx;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#50fa7b">main</span>() {
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> hostArray[ARRAY_SIZE];
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> <span style="color:#ff79c6">*</span>devResult;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// 初始化常量数组
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">for</span> (<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> ARRAY_SIZE; <span style="color:#ff79c6">++</span>i) {
+</span></span><span style="display:flex;"><span>        hostArray[i] <span style="color:#ff79c6">=</span> i <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// 分配设备端内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>devResult, ARRAY_SIZE <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">int</span>));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// 将常量数组拷贝到设备端常量内存中
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">cudaMemcpyToSymbol</span>(constantArray, hostArray, ARRAY_SIZE <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">int</span>));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// 调用内核函数
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    kernel<span style="color:#ff79c6">&lt;&lt;&lt;</span><span style="color:#bd93f9">1</span>, ARRAY_SIZE<span style="color:#ff79c6">&gt;&gt;&gt;</span>(devResult);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// 同步CUDA流，确保内核执行完成
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">cudaDeviceSynchronize</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// 将结果拷贝回主机端
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">int</span> result[ARRAY_SIZE];
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">cudaMemcpy</span>(result, devResult, ARRAY_SIZE <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">int</span>), cudaMemcpyDeviceToHost);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// 打印结果
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Result:</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">for</span> (<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> ARRAY_SIZE; <span style="color:#ff79c6">++</span>i) {
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;%d &#34;</span>, result[i]);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// 释放设备端内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">cudaFree</span>(devResult);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="操作">操作</h2>
+<h4 id="原子操作">原子操作</h4>
+<p><code>atomicAdd(addr, val)</code></p>
+<p>读取地址addr处的值，将y增加到这个值，以及将结果保存回地址addr。</p>
+<h4 id="原子锁">原子锁</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#ff79c6">*</span>mutex;
+</span></span><span style="display:flex;"><span><span style="color:#8be9fd">void</span> <span style="color:#50fa7b">lock</span>(<span style="color:#8be9fd">void</span>){
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>(<span style="color:#ff79c6">*</span>mutex <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">*</span>mutex <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">1</span>; <span style="color:#6272a4">//将1保存到锁
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>当mutex为0时，将数值1保存到锁，后续访问的时候如果mutex为1则无法进行后续任务。然而，如果在线程读取到0并且还没有修改这个值之前，另一个线程将1写入到互斥体，则两个线程都会执行后面的操作。要实现正确的操作，整个运算都要以原子方式来进行。</p>
+<p>下面是lock的实现</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">struct</span> Lock{
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> <span style="color:#ff79c6">*</span>mutex;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">Lock</span>(<span style="color:#8be9fd">void</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#8be9fd">int</span> state <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span> mutex, <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">int</span>)));
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(mutex, <span style="color:#ff79c6">&amp;</span>state, <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">int</span>), cudaMemcpyHostToDevice));
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">~</span><span style="color:#50fa7b">Lock</span>(<span style="color:#8be9fd">void</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">cudaFree</span>(mutex);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    __device__ <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">lock</span>(<span style="color:#8be9fd">void</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">while</span>(<span style="color:#50fa7b">atomicCAS</span>(mutex, <span style="color:#bd93f9">0</span>, <span style="color:#bd93f9">1</span>) <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    __device__ <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">unlock</span>(<span style="color:#8be9fd">void</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">atomicExch</span>(mutex, <span style="color:#bd93f9">0</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>atomicCas()是一个原子操作。调用atomicCAS()将返回位于mutex地址上的值。<strong>因此while循环会不断运行，直到atomicCAS发现mutex的值为0。当发现为0时，比较操作成功，线程将把1写入到mutex。</strong></p>
+<p>通过atomicExch(mutex, 0)来重制mutex的值，将其与第二个参数进行交换，并返回它读到的值。</p>
+<h2 id="事件">事件</h2>
+<h2 id="线程同步">线程同步</h2>
+<h4 id="__syncthreads">__syncthreads</h4>
+<p><code>__syncthreads()</code>函数的功能是<strong>确保同一个线程块的线程</strong>执行完该语句之前的所有语句。使用<code>__syncthreads()</code>需要注意的点是要确保所有线程都能够执行该语句，否则其他线程就会永远等待那些执行不了该语句的线程，从而停止下一步的执行。</p>
+<p>注：CUDA并没有提供一个可以同步所有线程（包括不同线程块）的函数。这是因为CUDA的并行模型设计使得在不同线程块之间进行同步更加困难和昂贵。通常情况下，CUDA编程模型假设各个线程块是独立执行的，并且不会直接相互影响。</p>
+
+                
+
+                
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B9%9D/" data-toggle="tooltip" data-placement="top" title="CUDA学习(九)">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" data-toggle="tooltip" data-placement="top" title="Linux 常用命令">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+                
+
+                
+
+
+
+            </div>
+
+            
+            
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+            
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+                <section>
+                    <hr>
+                    <h5>FRIENDS</h5>
+                    <ul class="list-inline">
+                        
+                        <li><a target="_blank" href=""></a></li>
+                        
+                    </ul>
+                </section>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">                  
+                    
+                    <li>
+                        <a href="mailto:KasterMist@gmail.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/KasterMist">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		            
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/letian-xie-8a0886282/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Kaster Mist Blog 2024
+                    
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        
+        
+        
+        
+            _containerSelector = 'div.post-container'
+        
+
+        
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        
+        $(selector).html('')
+
+        
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    
+
+
+    loadAsync("\/js\/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+
+</body>
+</html>

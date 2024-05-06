@@ -24,72 +24,72 @@
     </item>
     <item>
       <title>CUDA学习(十)--书籍中的函数整合</title>
-      <link>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E5%8D%81-%E4%B9%A6%E7%B1%8D%E4%B8%AD%E7%9A%84%E5%87%BD%E6%95%B0%E6%95%B4%E5%90%88/</link>
+      <link>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%8D%81-%E4%B9%A6%E7%B1%8D%E4%B8%AD%E7%9A%84%E5%87%BD%E6%95%B0%E6%95%B4%E5%90%88/</link>
       <pubDate>Mon, 11 Mar 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E5%8D%81-%E4%B9%A6%E7%B1%8D%E4%B8%AD%E7%9A%84%E5%87%BD%E6%95%B0%E6%95%B4%E5%90%88/</guid>
+      <guid>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%8D%81-%E4%B9%A6%E7%B1%8D%E4%B8%AD%E7%9A%84%E5%87%BD%E6%95%B0%E6%95%B4%E5%90%88/</guid>
       <description>&lt;p&gt;前面几章主要是对参考书目的内容进行一个概括。本章将根据参考书目的内容对所学到的所有函数进行一个整理和总结，以便复习和参考。英伟达的官方网站包含了所有的CUDA函数，可参考https://developer.download.nvidia.cn/compute/DevZone/docs/html/C/doc/html/index.html&lt;/p&gt;</description>
     </item>
     <item>
       <title>CUDA学习(九)</title>
-      <link>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B9%9D/</link>
+      <link>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B9%9D/</link>
       <pubDate>Fri, 08 Mar 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B9%9D/</guid>
+      <guid>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B9%9D/</guid>
       <description>&lt;p&gt;这部分是基于原子操作章节进行的高级操作介绍，即实现锁定数据结构。&lt;/p&gt;&#xA;&lt;p&gt;原子操作只能确保每个线程在完成读取-修改-写入的序列之前，将不会有其他的线程读取或者写入目标内存。然而，原子操作并不能确保这些线程将按照何种顺序执行。例如当有三个线程都执行加法运算时，加法运行的执行顺序可以为(A + B) + C，也可以为A + (B + C)。这对于整数来说是可以接受的，因为中间结果可能被截断，因此(A + B) + C通常并不等于A + (B + c)。因此，浮点数值上的原子数学运算是否有用就值得怀疑🤔。因此在早期的硬件中，浮点数学运算并不是优先支持的功能。&lt;/p&gt;&#xA;&lt;p&gt;然而，如果可以容忍在计算结果中存在某种程度的不确定性，那么仍然可以完全在GPU上实现归约运算。我们首先需要通过某种方式来绕开原子浮点数学运算。在这个解决方案中仍将使用原子操作，但不是用于算数本身。&lt;/p&gt;</description>
     </item>
     <item>
       <title>CUDA学习(八)</title>
-      <link>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E5%85%AB/</link>
+      <link>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%85%AB/</link>
       <pubDate>Thu, 29 Feb 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E5%85%AB/</guid>
+      <guid>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%85%AB/</guid>
       <description>本章将介绍如何分配和使用零拷贝内存(Zero-Copy Memory)，如何在同一个应用程序中使用多个GPU，以及如何分配和使用可移动的固定内</description>
     </item>
     <item>
       <title>CUDA学习(七)</title>
-      <link>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%83/</link>
+      <link>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%83/</link>
       <pubDate>Wed, 28 Feb 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%83/</guid>
+      <guid>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%83/</guid>
       <description>在并行环境中，任务可以是任意操作。例如，应用程序可以执行两个任务：其中一个线程重绘程序的GUI，而另一个线程通过网络下载更新包。这些任务并行</description>
     </item>
     <item>
       <title>CUDA学习(六)</title>
-      <link>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E5%85%AD/</link>
+      <link>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%85%AD/</link>
       <pubDate>Tue, 27 Feb 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E5%85%AD/</guid>
+      <guid>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%85%AD/</guid>
       <description>在某些情况中，对于单线程应用程序来说非常简单的任务，在大规模并行架构上实现时会变成一个复杂的问题。在本章中，我们将举例其中一些情况，并在这些</description>
     </item>
     <item>
-      <title>CUDA学习(四)</title>
-      <link>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%94/</link>
+      <title>CUDA学习(五)</title>
+      <link>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%94/</link>
       <pubDate>Fri, 23 Feb 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%94/</guid>
+      <guid>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%94/</guid>
       <description>本章将学习如何分配和使用纹理内存(texture memory)。和常量内存一样，纹理内存是另一种类型的只读内存，在特定的访问模式中，纹理内存</description>
     </item>
     <item>
       <title>CUDA学习(四)</title>
-      <link>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E5%9B%9B/</link>
+      <link>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%9B%9B/</link>
       <pubDate>Sun, 18 Feb 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E5%9B%9B/</guid>
+      <guid>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%9B%9B/</guid>
       <description>这一章会介绍如何在CUDA C中使用常量内存、了解常量内存的性能特性以及学习如何使用CUDA事件来测量应用程序的性能。 常量内存 到目前为止，我们</description>
     </item>
     <item>
       <title>CUDA学习(三)</title>
-      <link>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%89/</link>
+      <link>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%89/</link>
       <pubDate>Mon, 12 Feb 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%89/</guid>
+      <guid>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%89/</guid>
       <description>这一章将介绍线程块以及线程之间的通信机制和同步机制。 在GPU启动并行代码的实现方法是告诉CUDA运行时启动核函数的多个并行副本。我们将这些并</description>
     </item>
     <item>
       <title>CUDA学习(二)</title>
-      <link>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%8C/</link>
+      <link>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%8C/</link>
       <pubDate>Thu, 08 Feb 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%8C/</guid>
+      <guid>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%8C/</guid>
       <description>这一部分将介绍CUDA的并行编程方式 矢量求和运算 假设有两组数据，我们需要将这两组数据中对应的元素两两相加，并将结果保存在第三个数组中。 基于C</description>
     </item>
     <item>
       <title>CUDA学习(一)</title>
-      <link>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%80/</link>
+      <link>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%80/</link>
       <pubDate>Sun, 04 Feb 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/post/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%80/</guid>
+      <guid>http://localhost:1313/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%80/</guid>
       <description>参考书目: GPU高性能编程CUDA实战 书目网页链接: https://hpc.pku.edu.cn/docs/20170829223652566150.pdf 该博客参考于上述书籍，虽然书有一点老，但是作为初学者而言仍然能学到很多东西。 本书所包含</description>
     </item>
   </channel>

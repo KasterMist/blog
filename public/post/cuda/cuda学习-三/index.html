@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Kaster Mist Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="http://localhost:1313//img/background.jpg">
+    <meta property="twitter:image" content="http://localhost:1313//img/background.jpg" />
+    
+
+    
+    <meta name="title" content="CUDA学习(三)" />
+    <meta property="og:title" content="CUDA学习(三)" />
+    <meta property="twitter:title" content="CUDA学习(三)" />
+    
+
+    
+    <meta name="description" content="">
+    <meta property="og:description" content="" />
+    <meta property="twitter:description" content="" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>CUDA学习(三) | 喀斯特雾霭的博客 | Kaster Mist Blog</title>
+
+    <link rel="canonical" href="/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%89/">
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+
+    
+    <link rel="stylesheet" href="/css/font-awesome.all.min.css">
+
+    
+    
+
+    
+    <script src="/js/jquery.min.js"></script>
+
+    
+    <script src="/js/bootstrap.min.js"></script>
+
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    <script src="/js/lazysizes.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Kaster Mist Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">All Posts</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/cuda/">cuda</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/unix/">unix</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/archive//">ARCHIVE</a></li>
+                    
+                        <li><a href="/notes//">NOTES</a></li>
+                    
+                        <li><a href="/about//">ABOUT</a></li>
+                    
+		            <li>
+                        <a href="/search"><i class="fa fa-search"></i></a>
+		           </li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/background.jpg')
+    }
+</style>
+
+<header class="intro-header" >
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>CUDA学习(三)</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        
+                            Posted by 
+                            
+                                    Kaster Mist Blog
+                             
+                            on 
+                            Monday, February 12, 2024
+                            
+                            
+                            
+                            
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <p>这一章将介绍线程块以及线程之间的通信机制和同步机制。</p>
+<p>在GPU启动并行代码的实现方法是告诉CUDA运行时启动核函数的多个并行副本。我们将这些并行副本称为线程块(Block)。</p>
+<p>CUDA运行时将把这些线程块分解为多个线程。当需要启动多个并行线程块时，只需将尖括号中的第一个参数由1改为想要启动的线程块数量。</p>
+<p>在尖括号中，第二个参数表示CUDA运行时在每个线程块中创建的线程数量。假设尖括号中的变量为&laquo;&lt;N, M&raquo;&gt;总共启动的线程数量可以按照以下公式计算:
+$$
+N个线程块 * M个线程/线程块 = N*M个并行线程
+$$</p>
+<!-- raw HTML omitted -->
+<h3 id="使用线程实现gpu上的矢量求和">使用线程实现GPU上的矢量求和</h3>
+<p>在之前的代码中，我们才去的时调用N个线程块，每个线程块对应一个线程<code>add&lt;&lt;&lt;N, 1&gt;&gt;&gt;(dev_a, dev_b, dev_c);</code>。</p>
+<p>如果我们启动N个线程，并且所有线程都在一个线程块中，则可以表示为<code>add&lt;&lt;&lt;1, N&gt;&gt;&gt;(dev_a, dev_b, dev_c);</code>。此外，因为只有一个线程块，我们需要通过线程索引来对数据进行索引(而不是线程块索引)，需要将<code>int tid = blockIdx.x;</code>修改为<code>int tid = threadIdx.x;</code></p>
+<h3 id="在gpu上对更长的矢量求和">在GPU上对更长的矢量求和</h3>
+<p>对于启动核函数时每个线程块中的线程数量，硬件也进行了限制。具体来说，最大的线程数量不能超过设备树形结构中maxThreadsPerBlock域的值。对目前的GPU来说一个线程块最多有1024个线程。如果要通过并行线程对长度大于1024的矢量进行相加的话，就需要将线程与线程块结合起来才能实现。</p>
+<p>此时，计算索引可以表示为:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">int</span> tid <span style="color:#ff79c6">=</span> threadIdx.x <span style="color:#ff79c6">+</span> blockIdx.x <span style="color:#ff79c6">*</span> blockDim.x;
+</span></span></code></pre></div><p>blockDim保存的事线程块中每一维的线程数量，由于使用的事一维线程块，因此只用到blockDim.x。</p>
+<p>此外，gridDim是二维的，而blockDim是三维的。</p>
+<p>假如我们使用多个线程块处理N个并行线程，每个线程块处理的线程数量为128，那样可以启动N/128个线程块。然而问题在于，当N小于128时，比如127，那么N/128等于0，此时将会启动0个线程块。所以我们希望这个除法能够向上取整。我们可以不用调用 ceil()函数，而是将计算改为(N+127)/N。因此，这个例子调用核函数可以写为:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>add<span style="color:#ff79c6">&lt;&lt;&lt;</span>(N <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">127</span>) <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">128</span>, <span style="color:#bd93f9">128</span><span style="color:#ff79c6">&gt;&gt;&gt;</span>(dev_a, dev_b, dev_c);
+</span></span></code></pre></div><p>当N不是128的整数倍时，将启动过多的线程。然而，在核函数中已经解决了这个问题。在访问输入数组和输出数组之前，必须检查线程的便宜是否位于0到N之间。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">if</span>(tid <span style="color:#ff79c6">&lt;</span> N){
+</span></span><span style="display:flex;"><span>	c[tid] <span style="color:#ff79c6">=</span> a[tid] <span style="color:#ff79c6">+</span> b[tid];
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>因此，当索引越过数组的边界时，核函数将自动停止执行计算。核函数不会对越过数组边界的内存进行读取或者写入。</p>
+<h3 id="在gpu上对任意长度的矢量求和">在GPU上对任意长度的矢量求和</h3>
+<p>当矢量的长度很长时，我们可以让每一个线程执行多个矢量相加。例如</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>__global__ <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">add</span>(<span style="color:#8be9fd">int</span> <span style="color:#ff79c6">*</span>a, <span style="color:#8be9fd">int</span> <span style="color:#ff79c6">*</span>b, <span style="color:#8be9fd">int</span> <span style="color:#ff79c6">*</span>c){
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> tid <span style="color:#ff79c6">=</span> threadIdx.x <span style="color:#ff79c6">+</span> blockIdx.x <span style="color:#ff79c6">*</span> blockDim.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">while</span>(tid <span style="color:#ff79c6">&lt;</span> N){
+</span></span><span style="display:flex;"><span>        c[tid] <span style="color:#ff79c6">=</span> a[tid] <span style="color:#ff79c6">+</span> b[tid];
+</span></span><span style="display:flex;"><span>        tid <span style="color:#ff79c6">+=</span> blockDim.x <span style="color:#ff79c6">*</span> gridDim.x;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>当每个线程计算完当前索引上的任务后，接着就需要对索引进行递增，其中递增的步长为线程格中正在运行的线程数量。这个数值等于每个线程块中的线程数量乘上线程格中线程块的数量，即blockDim.x * gridDim.x。</p>
+<h3 id="共享内存和同步">共享内存和同步</h3>
+<p>CUDA C编译器对共享内存中的变量与普通变量分别采取不同的处理方式。对于在GPU上启动的每个线程块，CUDA C编译器都将创建该变量的一个副本，线程块中的每个线程都共享这块内存，但线程却无法看到也不能修改其他线程块的变量副本。这就实现了一个非常好的方式，<strong>使得一个线程块中的多个线程能够在计算上进行通信和协作</strong>。</p>
+<p>而且，共享内存缓冲区驻留在物理GPU上，而不是驻留在GPU之外的系统内存中。因此，<strong>在访问共享内存时的延迟要远远低于访问普通缓冲区的延迟</strong>，使得共享内存像每个线程块的高速缓存或者中间结果暂存器那样高效。</p>
+<p>如果想要实现线程之间通信，那么还需要一种机制来实现线程之间的同步。例如，如果线程A将一个值写入到共享内存，并且我们希望线程B对这个值进行一些操作，那么只有当线程A的写入操作完成之后，线程B才能开始执行它的操作。如果没有同步，那么将发生竞态条件(race condition)。</p>
+<p>下面将通过一个矢量的点积运算来详细介绍共享内存和同步。矢量点积运算为矢量相乘结束后将值相加起来以得到一个标量输出值。例如对两个包含4个元素的矢量进行点积运算:
+$$
+(x_1, x_2, x_3, x_4) * (y_1, y_2, y_3, y_4) = x_1y_1 + x_2y_2 + x_3y_3 + x_4y_4
+$$
+由于最终结果是所有乘积的总和，因此每个线程要保存它所计算的乘积的加和。下面代码实现了点积函数的第一个步骤:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">#include</span> <span style="color:#ff79c6">&#34;../common/book.h&#34;</span><span style="color:#ff79c6">
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">#define imin(a, b) (a &lt; b ? a : b)
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">const</span> <span style="color:#8be9fd">int</span> N <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">33</span> <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">1024</span>;
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">const</span> <span style="color:#8be9fd">int</span> threadsPerBlock <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">256</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>__global__ <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">dot</span>(<span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a, <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>b, <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>c){
+</span></span><span style="display:flex;"><span>    __shared__ <span style="color:#8be9fd">float</span> cache[threadsPerBlock];
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> tid <span style="color:#ff79c6">=</span> threadIdx.x <span style="color:#ff79c6">+</span> blockIdx.x <span style="color:#ff79c6">*</span> blockDim.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> cacheIndex <span style="color:#ff79c6">=</span> threadIdx.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> temp <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">while</span>(tid <span style="color:#ff79c6">&lt;</span> N){
+</span></span><span style="display:flex;"><span>        temp <span style="color:#ff79c6">+=</span> a[tid] <span style="color:#ff79c6">*</span> b[tid];
+</span></span><span style="display:flex;"><span>        tid <span style="color:#ff79c6">+=</span> blockDim.x <span style="color:#ff79c6">*</span> gridDim.x;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//设置cache中相应位置上的值
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    cache[cacheIndex] <span style="color:#ff79c6">=</span> temp;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>代码中声明了一个共享内存缓冲区，名字为cache。这个缓冲区将保存每个线程计算的加和值。我们将cache数组的大小声明为threadsPerBlock，这样线程块中每个线程都能将它计算的临时结果保存到某个位置上。之前在分配全局内存时，我们为每个执行核函数的线程都分配了足够的内存，即线程块的数量乘以threadsPerBlock。但对于共享变量来说，由于编译器将为每个线程块生成共享变量的一个副本，因此只需根据线程块中线程的数量来分配内存。</p>
+<p>我们需要将cache中所有的值相加起来。在执行这个运算时，需要通过一个线程来读取保存在cache中的值。由于race condition，我们需要使用下面的代码来确保对所有共享数组cache[]的写入操作在读组cache之前完成:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#6272a4">//对线程块中的线程进行同步
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span><span style="color:#50fa7b">__syncthreads</span>();
+</span></span></code></pre></div><p>这个函数调用将确保线程块中的每个线程都执行完__syncthreads()前面的语句后，才会执行下一条语句。</p>
+<p>这时，我们可以将其中的值相加起来(称为归约Reduction)。代码的基本思想是每个线程将cache[]中的两个值相加起来，然后将结果保存回cache[]。由于每个线程都将两个值合并为一个值，那么在完成这个步骤后，得到的结果数量就是计算开始时数值数量的一半。下一个步骤中我们对这一半数值执行相同的操作，在将这种操作执行log2(threadsPerBlock)步骤后，就能得到cache[]中所有值的总和。对于这个示例来说，我们在每个线程块中使用了256个线程，因此需要8次迭代将cache[]中的256个值归约为1个值。这个归约过程的实现可以表示为以下代码:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#6272a4">//对于归约运算来说，以下代码要求threadsPerBlock必须时2的指数
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span><span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> blockDim.x <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">while</span>(i <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>){
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>(cacheIndex <span style="color:#ff79c6">&lt;</span> i){
+</span></span><span style="display:flex;"><span>        cache[cacheIndex] <span style="color:#ff79c6">+=</span> cache[cacheIndex <span style="color:#ff79c6">+</span> i];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">__syncthreads</span>();
+</span></span><span style="display:flex;"><span>    i <span style="color:#ff79c6">/=</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>再结束了while()循环后，每个线程块都得到了一个值，这个值位于cache[]的第一个元素中，并且就等于该线程块中两两元素乘积的加和。然后，我们将这个值保存到全局内存并结束核函数:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">if</span>(cacheIndex <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>){
+</span></span><span style="display:flex;"><span>    c[blockIdx.x] <span style="color:#ff79c6">=</span> cache[<span style="color:#bd93f9">0</span>];
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>只让cacheIndex为0的线程执行保存操作时因为每个线程块只有一个值写入到全局内存，因此每个线程块只需要一个线程来执行这个操作。最后，由于每个线程块都只写入一个值到全局数据c[]中，因此可以通过blockIdx来索引这个值。</p>
+<p>点积运算的最后一个步骤就是计算c[]中所有元素的总和。像GPU这种大规模的并行机器在执行最后的归约步骤时，通常会浪费计算资源，因为此时的数据集往往会非常小。因此，我们可以将执行控制返回给主机，并且由CPU来完成最后一个加法步骤。</p>
+<p>下面给出了完整的代码实现:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">#include</span> <span style="color:#ff79c6">&#34;../common/book.h&#34;</span><span style="color:#ff79c6">
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">#define imin(a, b) (a &lt; b? a : b)
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">const</span> <span style="color:#8be9fd">int</span> N <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">33</span> <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">1024</span>;
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">const</span> <span style="color:#8be9fd">int</span> threadsPerBlock <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">256</span>;
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">const</span> <span style="color:#8be9fd">int</span> blocksPerGrid <span style="color:#ff79c6">=</span> <span style="color:#50fa7b">imin</span>(<span style="color:#bd93f9">32</span>, (N <span style="color:#ff79c6">+</span> threadsPerBlock <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">1</span>) <span style="color:#ff79c6">/</span> threadsPerBlock);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>__global__ <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">dot</span>(<span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a, <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>b, <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>c){
+</span></span><span style="display:flex;"><span>    __shared__ <span style="color:#8be9fd">float</span> cache[threadsPerBlock];
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> tid <span style="color:#ff79c6">=</span> threadIdx.x <span style="color:#ff79c6">+</span> blockIdx.x <span style="color:#ff79c6">*</span> blockDim.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> cacheIndex <span style="color:#ff79c6">=</span> threadIdx.x;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> temp <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">while</span>(tid <span style="color:#ff79c6">&lt;</span> N){
+</span></span><span style="display:flex;"><span>        temp <span style="color:#ff79c6">+=</span> a[tid] <span style="color:#ff79c6">*</span> b[tid];
+</span></span><span style="display:flex;"><span>        tid <span style="color:#ff79c6">+=</span> blockDim.x <span style="color:#ff79c6">*</span> gridDim.x;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//设置cache中相应位置上的值
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    cache[cacheIndex] <span style="color:#ff79c6">=</span> temp;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//对线程块中的线程进行同步
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">__syncthreads</span>();
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//对于归约来说，以下代码要求threadsPerBlock必须是2的指数
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> blockDim.x <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">while</span>(i <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">if</span>(cacheIndex <span style="color:#ff79c6">&lt;</span> i){
+</span></span><span style="display:flex;"><span>            cache[cacheIndex] <span style="color:#ff79c6">+=</span> cache[cacheIndex <span style="color:#ff79c6">+</span> i];
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">__syncthreads</span>(); <span style="color:#6272a4">//循环中更新了变量cache，所以需要在下一次循环前进行同步。该同步语句需要所有的线程都必须运行才行。如果有线程不能运行这一处代码，会导致其他线程永远等待。
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>        i <span style="color:#ff79c6">/=</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">if</span>(cacheIndex <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>){
+</span></span><span style="display:flex;"><span>        c[blockIndex.x] <span style="color:#ff79c6">=</span> cache[<span style="color:#bd93f9">0</span>];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#50fa7b">main</span>(){
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>a, <span style="color:#ff79c6">*</span>b, c, <span style="color:#ff79c6">*</span>partial_c;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> <span style="color:#ff79c6">*</span>dev_c, <span style="color:#ff79c6">*</span>dev_b, <span style="color:#ff79c6">*</span>dev_partial_c;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在CPU上分配内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    a <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">float</span><span style="color:#ff79c6">*</span>) <span style="color:#50fa7b">malloc</span>(N<span style="color:#ff79c6">*</span><span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>));
+</span></span><span style="display:flex;"><span>    b <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">float</span><span style="color:#ff79c6">*</span>) <span style="color:#50fa7b">malloc</span>(N<span style="color:#ff79c6">*</span><span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>));
+</span></span><span style="display:flex;"><span>    partial_c <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">float</span><span style="color:#ff79c6">*</span>) <span style="color:#50fa7b">malloc</span>(blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在GPU上分配内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_a, N <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>)));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_b, N <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>)));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_partial_c, blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>)));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//填充主机内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> N; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        a[i] <span style="color:#ff79c6">=</span> i;
+</span></span><span style="display:flex;"><span>        b[i] <span style="color:#ff79c6">=</span> i <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">2</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将数组&#34;a&#34;和&#34;b&#34;复制到GPU
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(dev_a, a, N <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaMemcpyHostToDevice));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(dev_b, b, N <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaMemcpyHostToDevice));
+</span></span><span style="display:flex;"><span>    dot<span style="color:#ff79c6">&lt;&lt;&lt;</span>blocksPerGrid, threadsPerBlock<span style="color:#ff79c6">&gt;&gt;&gt;</span>(dev_a, dev_b, dev_partial_c);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//将数组&#34;c&#34;从GPU复制到CPU
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(partial_c, dev_partial_c, blocksPerGrid <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">float</span>), cudaMemcpyDeviceToHost));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在CPU上完成最终的求和运算
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    c <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> blocksPerGrid; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        c <span style="color:#ff79c6">+=</span> partial_c[i];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">#define sum_squares(x) (x * (x + 1) * (2 * x + 1) / 6)
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Does GPU value %.6g = %.6g? </span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, c, <span style="color:#bd93f9">2</span> <span style="color:#ff79c6">*</span> <span style="color:#50fa7b">sum_square</span>((<span style="color:#8be9fd">float</span>) (N <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">1</span>)));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//释放GPU上的内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">cudaFree</span>(dev_a);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">cudaFree</span>(dev_b);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">cudaFree</span>(dev_partial_c);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//释放CPU上的内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">free</span>(a);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">free</span>(b);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">free</span>(partial_c);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+
+                
+
+                
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%8C/" data-toggle="tooltip" data-placement="top" title="CUDA学习(二)">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%9B%9B/" data-toggle="tooltip" data-placement="top" title="CUDA学习(四)">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+                
+
+                
+
+
+
+            </div>
+
+            
+            
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+            
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+                <section>
+                    <hr>
+                    <h5>FRIENDS</h5>
+                    <ul class="list-inline">
+                        
+                        <li><a target="_blank" href=""></a></li>
+                        
+                    </ul>
+                </section>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">                  
+                    
+                    <li>
+                        <a href="mailto:KasterMist@gmail.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/KasterMist">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		            
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/letian-xie-8a0886282/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Kaster Mist Blog 2024
+                    
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        
+        
+        
+        
+            _containerSelector = 'div.post-container'
+        
+
+        
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        
+        $(selector).html('')
+
+        
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    
+
+
+    loadAsync("\/js\/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+
+</body>
+</html>

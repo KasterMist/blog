@@ -138,6 +138,8 @@ range列表
 | `.,.+5` | six lines (current to current +5 inclusive) | `:.,.+5s/old/new/g` |
 | `.,.5`  | same (`.5` is intepreted as `.+5`)          | `:.,.5s/old/new/g`  |
 
+有些特殊符号需要在前面加上`\`才能识别。
+
 需要注意的是，如果同一行有多个能匹配到的位置，替换的话只会替换第一个匹配的信息。添加flag: g可以实现每一行中所有匹配的替换(比如上面range列表中的最后的`/g`)。
 
 flag list

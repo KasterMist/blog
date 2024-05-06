@@ -9,6 +9,8 @@ preserveTaxonomyNames = true
 paginate = 5 #frontpage pagination
 hasCJKLanguage = true
 
+
+
 [outputs]
 home = ["HTML", "RSS", "Algolia"]
 
@@ -124,3 +126,4 @@ params = ["categories", "tags"]
     startLevel = 1
   [markup.highlight]
     style = "dracula"
+

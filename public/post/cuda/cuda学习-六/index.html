@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Kaster Mist Blog">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="http://localhost:1313//img/background.jpg">
+    <meta property="twitter:image" content="http://localhost:1313//img/background.jpg" />
+    
+
+    
+    <meta name="title" content="CUDA学习(六)" />
+    <meta property="og:title" content="CUDA学习(六)" />
+    <meta property="twitter:title" content="CUDA学习(六)" />
+    
+
+    
+    <meta name="description" content="">
+    <meta property="og:description" content="" />
+    <meta property="twitter:description" content="" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>CUDA学习(六) | 喀斯特雾霭的博客 | Kaster Mist Blog</title>
+
+    <link rel="canonical" href="/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E5%85%AD/">
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+
+    
+    <link rel="stylesheet" href="/css/font-awesome.all.min.css">
+
+    
+    
+
+    
+    <script src="/js/jquery.min.js"></script>
+
+    
+    <script src="/js/bootstrap.min.js"></script>
+
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    <script src="/js/lazysizes.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Kaster Mist Blog</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">All Posts</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/cuda/">cuda</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/unix/">unix</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/archive//">ARCHIVE</a></li>
+                    
+                        <li><a href="/notes//">NOTES</a></li>
+                    
+                        <li><a href="/about//">ABOUT</a></li>
+                    
+		            <li>
+                        <a href="/search"><i class="fa fa-search"></i></a>
+		           </li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/background.jpg')
+    }
+</style>
+
+<header class="intro-header" >
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>CUDA学习(六)</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        
+                            Posted by 
+                            
+                                    Kaster Mist Blog
+                             
+                            on 
+                            Tuesday, February 27, 2024
+                            
+                            
+                            
+                            
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                <p>在某些情况中，对于单线程应用程序来说非常简单的任务，在大规模并行架构上实现时会变成一个复杂的问题。在本章中，我们将举例其中一些情况，并在这些情况中安全地完成传统单线程应用程序中的简单任务。</p>
+<!-- raw HTML omitted -->
+<h2 id="原子操作简介">原子操作简介</h2>
+<p>在编写传统的单线程应用程序时，程序员通常不需要使用原子操作。下面会介绍一下原子操作是什么，以及为什么在多线程程序中需要使用它们。我们先分析C或者C++的递增运算符：</p>
+<p>x++;</p>
+<p>在这个操作中包含了三个步骤：</p>
+<ol>
+<li>读取x中的值。</li>
+<li>将步骤1中读到的值增加1。</li>
+<li>将递增后的结果写回到x。</li>
+</ol>
+<p>有时候，这个过程也称为读取-修改-写入操作。</p>
+<p>当两个线程都需要对x的值进行递增时，假设x的初始值为7，理想情况下，两个线程按顺序对x进行递增，第一个线程完成三个步骤后第二个线程紧接着完成三个步骤，最后得到的结果是9。但是，实际情况下会出现两个线程的操作彼此交叉进行，这种情况下得到的结果将小于9(比如两个线程同时读取x=7，计算完后写入，那样的话x最后会等于8)。</p>
+<p>因此，我们需要通过某种方式一次性地执行完读取-修改-写入这三个操作，并在执行过程中不会被其他线程中断。<strong>由于这些操作的执行过程不能分解为更小的部分，因此我们将满足这种条件限制的操作称为原子操作。</strong></p>
+<h2 id="计算直方图">计算直方图</h2>
+<p>本章将通过给出计算直方图的例子来介绍如何进行原子性计算。</p>
+<h3 id="在cpu上计算直方图">在CPU上计算直方图</h3>
+<p>某个数据的直方图表示每个元素出现的频率。在示例中，这个数据将是随机生成的字节流。我们可以通过工具函数big_random_block()来生成这个随机的字节流。在应用程序中将生成100MB的随机数据。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">#include</span> <span style="color:#ff79c6">&#34;../common/book.h&#34;</span><span style="color:#ff79c6">
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">#define SIZE (100 * 1024 * 1024)
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#50fa7b">main</span>(){
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span> <span style="color:#ff79c6">*</span>buffer <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span><span style="color:#ff79c6">*</span>)<span style="color:#50fa7b">big_random_block</span>(SIZE);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>由于每个随机字节（8比特）都有256个不同的可能取值（从0x00到0xFF），因此在直方图中需要包含256个元素，每个元素记录相应的值在数据流中的出现次数。我们创建了一个包含256个元素的数组，并将所有元素的值初始化为0。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">int</span> histo[<span style="color:#bd93f9">256</span>];
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> <span style="color:#bd93f9">256</span>; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>    histo[i] <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>接下来需要计算每个值在buffer[]数据中的出现频率。算法思想是，每当在数组buffer[]中出现某个值z时，就递增直方图数组中索引为z的元素，这样就能计算出值z的出现次数。如果当前看到的值为buffer[i]，那么将递增数组中索引等于buffer[i]的元素。由于元素buffer[i]位于histo[buffer[i]]，我们只需一行代码就可以递增相应的计数器。在一个for循环中对buffer[]中的每个元素执行这个操作：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> SIZE; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>    histo[buffer[i]]<span style="color:#ff79c6">++</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>接下来将验证直方图的所有元素相加起来是否等于正确的值。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">long</span> histoCount <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> <span style="color:#bd93f9">256</span>; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>    histoCount <span style="color:#ff79c6">+=</span> histo[i];
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Histogram Sum: %ld</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, histoCount);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#50fa7b">free</span>(buffer);
+</span></span></code></pre></div><h3 id="在gpu上计算直方图">在GPU上计算直方图</h3>
+<p>以下时计算直方图的GPU版本</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#8be9fd">int</span> <span style="color:#50fa7b">main</span>(){
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span><span style="color:#ff79c6">*</span> buffer <span style="color:#ff79c6">=</span> (<span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span><span style="color:#ff79c6">*</span>)<span style="color:#50fa7b">big_random_block</span>(SIZE);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//初始化计时事件
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">cudaEvent_t</span> start, stop;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>start));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventCreate</span>(<span style="color:#ff79c6">&amp;</span>stop));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventRecord</span>(start, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//在GPU上为文件的数据分配内存
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span> <span style="color:#ff79c6">*</span>dev_buffer;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">int</span> <span style="color:#ff79c6">*</span>dev_histo;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMallc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_buffer, SIZE));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(dev_buffer, buffer, SIZE, cudaMemcpyHostToDevice));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMalloc</span>((<span style="color:#8be9fd">void</span><span style="color:#ff79c6">**</span>)<span style="color:#ff79c6">&amp;</span>dev_histo, <span style="color:#bd93f9">256</span> <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">int</span>)));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemset</span>(dev_histo, <span style="color:#bd93f9">0</span>, <span style="color:#bd93f9">256</span> <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">int</span>)));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">int</span> histo[<span style="color:#bd93f9">256</span>];
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaMemcpy</span>(histo, dev_histo, <span style="color:#bd93f9">256</span> <span style="color:#ff79c6">*</span> <span style="color:#ff79c6">sizeof</span>(<span style="color:#8be9fd">int</span>), cudaMemcpyDeviceToHost));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//得到停止事件并显示计时结果
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventRecord</span>(stop, <span style="color:#bd93f9">0</span>));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventSynchronize</span>(stop));
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">float</span> elapsedTime;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventElapsedTime</span>(<span style="color:#ff79c6">&amp;</span>elapsedTime, start, stop));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Time to generate: %3.1f ms</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, elapsedTime);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//下面是验证直方图的总和是否等于正确的值，因为是在CPU上运行，并不需要对此进行计时
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#8be9fd">long</span> histoCount <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> <span style="color:#bd93f9">256</span>; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        histoCount <span style="color:#ff79c6">+=</span> histo[i];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Histogram Sum: %ld</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, histoCount);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//验证GPU与CPU的搭配的是相同的计数值
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> SIZE; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        histo[buffer[i]]<span style="color:#ff79c6">--</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">for</span>(<span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>; i <span style="color:#ff79c6">&lt;</span> <span style="color:#bd93f9">256</span>; i<span style="color:#ff79c6">++</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#ff79c6">if</span>(histo[i] <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>){
+</span></span><span style="display:flex;"><span>            <span style="color:#50fa7b">printf</span>(<span style="color:#f1fa8c">&#34;Failure at %d!</span><span style="color:#f1fa8c">\n</span><span style="color:#f1fa8c">&#34;</span>, i);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventDestroy</span>(start));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">HANDLE_ERROR</span>(<span style="color:#50fa7b">cudaEventDestroy</span>(stop));
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">cudaFree</span>(dev_histo);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">cudaFree</span>(dev_buffer);
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">free</span>(buffer);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>cudaMemset()与C的memset()是相似的，不同之处在于cudaMemset()将返回一个错误码，将高速调用者在设置GPU内存时发生的错误。</p>
+<p>接下来会介绍GPU上计算直方图的代码。计算直方图的核函数需要的参数包括：</p>
+<ul>
+<li>一个指向输入数组的指针</li>
+<li>输入数组的长度</li>
+<li>一个指向输出直方图的指针</li>
+</ul>
+<p>核函数执行的第一个计算就是计算输入数据数组中的偏移。每个线程的起始偏移都是0到线程数量减1之间的某个值，然后，对偏移的增量为已启动线程的总数。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ff79c6">#include</span> <span style="color:#ff79c6">&#34;../common/book.h&#34;</span><span style="color:#ff79c6">
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span><span style="color:#ff79c6">#define SIZE (100 * 1024 * 1024)
+</span></span></span><span style="display:flex;"><span><span style="color:#ff79c6"></span>
+</span></span><span style="display:flex;"><span>__global__ <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">histo_kernel</span>(<span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span> <span style="color:#ff79c6">*</span>buffer, <span style="color:#8be9fd">long</span> size, <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">int</span> <span style="color:#ff79c6">*</span>histo){
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> threadIdx.x <span style="color:#ff79c6">+</span> blockIdx.x <span style="color:#ff79c6">*</span> blockDim.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> stride <span style="color:#ff79c6">=</span> blockDim.x <span style="color:#ff79c6">*</span> gridDim.x;
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">//当每个线程知道它的起始偏移i以及递增的数量，这段代码将遍历输入数组，并递增直方图中相应元素的值
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">while</span>(i <span style="color:#ff79c6">&lt;</span> size){
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">atomicAdd</span>(<span style="color:#ff79c6">&amp;</span>(histo[buffer[i]]), <span style="color:#bd93f9">1</span>);
+</span></span><span style="display:flex;"><span>        i <span style="color:#ff79c6">+=</span> stride;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>函数调用atomicAdd(addr, y)将生成一个原子的操作序列，这个操作序列包括读取地址addr处的值，将y增加到这个值，以及将结果保存回地址addr。底层硬件将确保当执行这些操作时，其他任何线程都不会读取或写入地址addr上的值。</p>
+<p>然而，原子操作回导致性能降低，但是解决问题的方法有时会需要更多而非更少的原子操作。**这里的主要问题并非在于使用了过多的原子操作，而是有数千个线程在少量的内存地址上发生竞争。**要解决这个问题，我们需要将直方图计算分为两个阶段。</p>
+<ul>
+<li>第一个阶段，每个并行线程块将计算它所处理数据的直方图。每个线程块在执行这个操作时都是相互独立的，因此可以在共享内存中计算这些直方图，这将避免每次将写入操作从芯片发送到DRAM。但是这种方式仍然需要原子操作，因为线程块中的多个线程之间仍然会处理相同值的数据元素。**不过，现在只有256个线程在256个地址上发生竞争，这将极大地减少在使用全局内存时在数千个线程之间发生竞争的情况。**我们将使用共享内存缓冲区temp[]而不是全局内存缓冲区histo[]，而且需要随后调用__syncthreads()来确保提交最后的写入操作。</li>
+<li>第二个阶段则是将每个线程块的临时直方图合并到全局缓冲区histo[]中。由于我们使用了256个线程，并且直方图中包含了256个元素，因此每个线程将自动把它计算得到的元素只增加到最终直方图的元素上（如果线程数量不等于元素数量，那么这个阶段将更为复杂）。我们并不保证线程块将按照何种顺序将各自的值相加到最终直方图中，但由于整数加法时可交换的，无论哪种顺序都会得到相同的结果。</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>__global__ <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">histo_kernel</span>(<span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">char</span><span style="color:#ff79c6">*</span> buffer, <span style="color:#8be9fd">long</span> size, <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">int</span> <span style="color:#ff79c6">*</span>histo){
+</span></span><span style="display:flex;"><span>    __shared__ <span style="color:#8be9fd">unsigned</span> <span style="color:#8be9fd">int</span> temp[<span style="color:#bd93f9">256</span>];
+</span></span><span style="display:flex;"><span>    temp[threadIdx.x] <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">__syncthreads</span>();
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> threadIdx.x <span style="color:#ff79c6">+</span> blockIdx.x <span style="color:#ff79c6">*</span> blockDim.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#8be9fd">int</span> stride <span style="color:#ff79c6">=</span> blockDim.x <span style="color:#ff79c6">*</span> gridDim.x;
+</span></span><span style="display:flex;"><span>    <span style="color:#ff79c6">while</span>(i <span style="color:#ff79c6">&lt;</span> size){
+</span></span><span style="display:flex;"><span>        <span style="color:#50fa7b">atomicAdd</span>(<span style="color:#ff79c6">&amp;</span>temp[buffer[i]], <span style="color:#bd93f9">1</span>);
+</span></span><span style="display:flex;"><span>        i <span style="color:#ff79c6">+=</span> offset;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">__syncthreads</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#50fa7b">atomicAdd</span>(<span style="color:#ff79c6">*</span>(histo[threadIdx.x]), temp[threadIdx.x]);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+
+                
+
+                
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%BA%94/" data-toggle="tooltip" data-placement="top" title="CUDA学习(五)">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/post/cuda/cuda%E5%AD%A6%E4%B9%A0-%E4%B8%83/" data-toggle="tooltip" data-placement="top" title="CUDA学习(七)">Next
+                            Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+                
+
+                
+
+
+
+            </div>
+
+            
+            
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+            
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+                <section>
+                    <hr>
+                    <h5>FRIENDS</h5>
+                    <ul class="list-inline">
+                        
+                        <li><a target="_blank" href=""></a></li>
+                        
+                    </ul>
+                </section>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">                  
+                    
+                    <li>
+                        <a href="mailto:KasterMist@gmail.com">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/KasterMist">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		            
+                    
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://www.linkedin.com/in/letian-xie-8a0886282/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-linkedin fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		           
+                    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Kaster Mist Blog 2024
+                    
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                    
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        
+        
+        
+        
+            _containerSelector = 'div.post-container'
+        
+
+        
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        
+        $(selector).html('')
+
+        
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    
+
+
+    loadAsync("\/js\/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+
+</body>
+</html>
